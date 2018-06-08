@@ -1,41 +1,73 @@
 #include <string.h>
 #include <stdio.h>
+#include <dirent.h>
 
 #include <switch.h>
 
 #include "elf2nso.h"
+#include "util.h"
+#include "patch.h"
+
+const char * TITLE_DIR = "/switch/swelfpatch/";
 
 int main(int argc, char **argv)
 {
     gfxInitDefault();
     consoleInit(NULL);
 
-    printf("Lolz!\n");
+    printf("Welcome to SwElfPatch. Do no evil.\n\n");
+
+
+    DIR* dir;
+    struct dirent* ent;
+
+    typedef char String[0x100];
+    String* tid_list = NULL;
+    char** tid_list_ptr = NULL;
+    int list_count = 0;
+    int list_max = 0;
+
+    dir = opendir(TITLE_DIR);
+    if(dir==NULL)
+    {
+        printf("Failed to open dir.\n");
+    }
+    else
+    {
+        printf("Using '%s':\n", TITLE_DIR);
+        while ((ent = readdir(dir)))
+        {
+            if (ent->d_type != DT_DIR)
+                continue;
+
+            char tid_str[17];
+            tid_str[16] = '\0';
+            memcpy(tid_str, ent->d_name, 16);
+            if (!isValidHexStr(tid_str))
+                continue;
+
+            if ( list_count >= list_max ){
+                list_max = list_count + 4;
+                tid_list = realloc(tid_list, list_max * sizeof(String));
+                tid_list_ptr = realloc(tid_list_ptr, list_max * sizeof(char*));
+            }
+            strcpy((char*)&tid_list[list_count], ent->d_name);
+            tid_list_ptr[list_count] = tid_list[list_count];
+            list_count++;
+        }
+        closedir(dir);
+    }
 
     // Main loop
     while(appletMainLoop())
     {
-        //Scan all the inputs. This should be done once for each frame
-        hidScanInput();
-
-        // Your code goes here
-
-        //hidKeysDown returns information about which buttons have been just pressed (and they weren't in the previous frame)
-        u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
-
-        if (kDown & KEY_A) {
-            int n_argc = 3;
-            char* n_argv[] = { "elf2nso", "/main.elf", "/atmosphere/titles/01003BC0000A0000/exefs/main" };
-            printf("Yolo\n");
-            int ret = elf2nso(n_argc, n_argv);
-            printf("Done: %d\n", ret);
-        }
-
-        if (kDown & KEY_PLUS) break; // break in order to return to hbmenu
-
-        gfxFlushBuffers();
-        gfxSwapBuffers();
-        gfxWaitForVsync();
+        int selection;
+        int ret = 0;
+        printf("%s\n", "Select Title:");
+        ret = selectFromList(&selection, tid_list_ptr, list_count);
+        if (ret == 1)
+            break;
+        // TODO implement file read and patching
     }
 
     gfxExit();
