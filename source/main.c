@@ -27,6 +27,9 @@ int main(int argc, char **argv)
     int list_count = 0;
     int list_max = 0;
 
+    char tid_str[17];
+    tid_str[16] = '\0';
+
     dir = opendir(TITLE_DIR);
     if(dir==NULL)
     {
@@ -40,8 +43,6 @@ int main(int argc, char **argv)
             if (ent->d_type != DT_DIR)
                 continue;
 
-            char tid_str[17];
-            tid_str[16] = '\0';
             memcpy(tid_str, ent->d_name, 16);
             if (!isValidHexStr(tid_str))
                 continue;
@@ -67,6 +68,20 @@ int main(int argc, char **argv)
         ret = selectFromList(&selection, tid_list_ptr, list_count);
         if (ret == 1)
             break;
+
+        PatchTarget target;
+        memcpy(target.tid_str, tid_list[selection], 16);
+
+        strcpy(target.patch_dir, TITLE_DIR);
+        strcat(target.patch_dir, tid_str);
+
+        strcpy(target.elf_dir, target.patch_dir);
+
+        strcat(target.patch_dir, "/main.swelfpatch");
+        strcat(target.elf_dir, "/main.elf");
+
+        printf("%s %s %s\n", target.tid_str, target.elf_dir, target.patch_dir);
+
         // TODO implement file read and patching
     }
 

@@ -6,6 +6,9 @@
 #include "sha256.h"
 #include "elf64.h"
 
+#ifndef ELF2NSO_H
+#define ELF2NSO_H
+
 typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint8_t u8;
@@ -35,4 +38,6 @@ typedef struct {
 
 uint8_t* ReadEntireFile(const char* fn, size_t* len_out);
 
-int elf2nso(int argc, char* argv[]);
+int elf2nso(uint8_t* elf, size_t elf_len, char* out_dir);
+
+#endif
