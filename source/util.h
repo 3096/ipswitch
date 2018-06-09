@@ -14,6 +14,8 @@ int isValidHexStr(const char* str);
 
 int isDirectory(const char* path);
 
+int strEndianSwap(char* str);
+
 void selectIndex(int* selection, char* list[], int size, int change);
 
 int selectFromList(int* selection, char* list[], int size);

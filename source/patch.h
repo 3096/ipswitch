@@ -1,5 +1,8 @@
+#include <stdio.h>
+
 #include <switch.h>
 
+#include "util.h"
 #include "elf2nso.h"
 
 #ifndef PATCH_H
@@ -17,6 +20,8 @@ typedef struct {
     u32 offset;
     u32 value;
 } Patch;
+
+int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian);
 
 int patchTarget(PatchTarget target);
 

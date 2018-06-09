@@ -10,6 +10,11 @@ int isDirectory(const char* path) {
     return S_ISDIR(statbuf.st_mode);
 }
 
+int strEndianSwap(char* str) {
+    // TODO
+    return 0;
+}
+
 void selectIndex(int* selection, char* list[], int size, int change) {
     *selection += change;
 

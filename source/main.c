@@ -14,9 +14,11 @@ int main(int argc, char **argv)
 {
     gfxInitDefault();
     consoleInit(NULL);
+    Result rc = 0;
 
     printf("Welcome to SwElfPatch. Do no evil.\n\n");
 
+    printf("Reading contents from %s\n", TITLE_DIR);
 
     DIR* dir;
     struct dirent* ent;
@@ -37,7 +39,6 @@ int main(int argc, char **argv)
     }
     else
     {
-        printf("Using '%s':\n", TITLE_DIR);
         while ((ent = readdir(dir)))
         {
             if (ent->d_type != DT_DIR)
@@ -63,26 +64,29 @@ int main(int argc, char **argv)
     while(appletMainLoop())
     {
         int selection;
-        int ret = 0;
-        printf("%s\n", "Select Title:");
-        ret = selectFromList(&selection, tid_list_ptr, list_count);
-        if (ret == 1)
+        printf("\n%s\n", "Select Title or Press + to quit:");
+        rc = selectFromList(&selection, tid_list_ptr, list_count);
+        if (rc == 1)
             break;
+
+        printf("Patching elf content...\n");
 
         PatchTarget target;
         memcpy(target.tid_str, tid_list[selection], 16);
 
         strcpy(target.patch_dir, TITLE_DIR);
-        strcat(target.patch_dir, tid_str);
+        strcat(target.patch_dir, tid_list[selection]);
 
         strcpy(target.elf_dir, target.patch_dir);
 
         strcat(target.patch_dir, "/main.swelfpatch");
         strcat(target.elf_dir, "/main.elf");
 
-        printf("%s %s %s\n", target.tid_str, target.elf_dir, target.patch_dir);
-
-        // TODO implement file read and patching
+        rc = patchTarget(target);
+        if(R_SUCCEEDED(rc))
+            printf("Done\n");
+        else
+            printf("Failed: %d\n", rc);
     }
 
     gfxExit();
