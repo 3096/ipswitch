@@ -3,16 +3,20 @@ Place your elf file in `sdmc:/switch/swelfpatch/{titleid-title_description}/main
 
 ## Structure of `.swelfpatch` file
 `.swelfpatch` will be a text file. See the main.swelfpatch for some simple Splatoon 2 3.0.1 edit I provided for example.
+
 ---
 The first line is mandatory to specify the value's Endianess with character `@`. It should either be `@little-endian` or `@big-endian`.
+
 ---
 The second line can be used to provide optional info about these patches preceded by a `#` symbol. The first 16 characters is the title id, and followed by whatever description necessary.
 
 ```#01003BC0000A0000 Splatoon™ 2 3.0.1 USA```
+
 ---
 Comments are marked with '/' character:
 
 ```// This is a comment.```
+
 ---
 For every patch, it is necessary to specify whether it is in use by putting `@enabled` or `@disabled` on top of it. The program will also print the last line of comment that it sees to explain the patch.
 
