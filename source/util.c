@@ -11,7 +11,18 @@ int isDirectory(const char* path) {
 }
 
 int strEndianSwap(char* str) {
-    // TODO
+    size_t size = strlen(str);
+    if(size%2 != 0)
+        return -1;
+    char * buffer = malloc(size);
+
+    for(int i = size-2; i >= 0; i-=2) {
+        buffer[size-i-2] = str[i];
+        buffer[size-i-1] = str[i+1];
+    }
+
+    memcpy(str, buffer, size);
+    free(buffer);
     return 0;
 }
 
@@ -77,7 +88,7 @@ int selectFromList(int* selection, char* list[], int size) {
 bool userConfirm(const char * msg) {
     printf("\n%s\nPress A to confirm, any other button to cancel\n", msg);
 
-    u64 kDownPrevious = hidKeysDown(CONTROLLER_P1_AUTO); 
+    u64 kDownPrevious = hidKeysDown(CONTROLLER_P1_AUTO);
     while(appletMainLoop())
     {
         hidScanInput();

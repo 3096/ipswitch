@@ -23,7 +23,7 @@ int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian) {
 
 int patchTarget(PatchTarget target) {
     printf("Reading elf... ");
-    
+
     size_t elf_len;
     uint8_t* elf = ReadEntireFile(target.elf_dir, &elf_len);
     if (elf == NULL) {
@@ -54,7 +54,7 @@ int patchTarget(PatchTarget target) {
         } else {
             if(line[1] == 'b' || line[1] == 'B')
                 isLittleEndian = false;
-        }        
+        }
     }
 
     bool enabled = false;
@@ -83,13 +83,19 @@ int patchTarget(PatchTarget target) {
         	continue;
 
         printf("%08X ", patch.offset);
-        printf("%08X\n", *(u32*)(elf+patch.offset));
-        
+        printf("%08X ", *(u32*)(elf+patch.offset));
+        printf("%08X\n", patch.value);
+        *(u32*)(elf+patch.offset) = patch.value;
     }
 
     fclose(patch_file);
 
-    //elf2nso(elf, elf_len, ATMOS_TITLE_DIR);
+    char out_dir[0x100];
+    strcpy(out_dir, ATMOS_TITLE_DIR);
+    strcat(out_dir, target.tid_str);
+    strcat(out_dir, "/exefs/main");
+
+    elf2nso(elf, elf_len, out_dir);
 
 	return 0;
 }
