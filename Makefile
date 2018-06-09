@@ -30,6 +30,14 @@ include $(DEVKITPRO)/libnx/switch_rules
 #     - icon.jpg
 #     - <libnx folder>/default_icon.jpg
 #---------------------------------------------------------------------------------
+VERSION_MAJOR := 0
+VERSION_MINOR := 0
+VERSION_MICRO := 1
+
+APP_TITLE	:=	SwElfPatch
+APP_AUTHOR	:=	3096
+APP_VERSION	:=	${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
+
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source

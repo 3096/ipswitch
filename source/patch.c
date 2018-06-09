@@ -85,10 +85,13 @@ int patchTarget(PatchTarget target) {
         printf("%08X ", patch.offset);
         printf("%08X ", *(u32*)(elf+patch.offset));
         printf("%08X\n", patch.value);
+
         *(u32*)(elf+patch.offset) = patch.value;
     }
 
     fclose(patch_file);
+
+    printf("\nDone\n\nCompressing into nso... ");
 
     char out_dir[0x100];
     strcpy(out_dir, ATMOS_TITLE_DIR);

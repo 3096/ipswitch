@@ -89,6 +89,9 @@ int main(int argc, char **argv)
             printf("Failed: %d\n", rc);
     }
 
+    free(tid_list);
+    free(tid_list_ptr);
+
     gfxExit();
     return 0;
 }

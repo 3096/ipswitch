@@ -1,0 +1,13 @@
+@little-endian
+#01003BC0000A0000 Splatoon™ 2 3.0.1 USA
+
+// Set money to 196607
+@enabled
+0019337C 4000A052
+00193380 E0FF9F72
+00193384 E0FF9F72
+00193388 E0FF9F72
+
+// Set sea snail to 696
+@disabled
+001933D0 00578052
