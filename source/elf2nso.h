@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include "lz4.h"
+#include <lz4.h>
 #include "sha256.h"
 #include "elf64.h"
 

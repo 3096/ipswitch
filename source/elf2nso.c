@@ -107,7 +107,7 @@ int elf2nso(uint8_t* elf, size_t elf_len, char* out_dir) {
         }
 
         // TODO check p_offset
-        comp_sz[i] = LZ4_compress_default(&elf[phdr->p_offset], comp_buf[i], phdr->p_filesz, comp_max);
+        comp_sz[i] = LZ4_compress_default((char*)&elf[phdr->p_offset], (char*)comp_buf[i], phdr->p_filesz, comp_max);
 
         if (comp_sz[i] < 0) {
             fprintf(stderr, "Failed to compress!\n");
