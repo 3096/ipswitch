@@ -1,9 +1,7 @@
-# SwElfPatch
-Apply patches to `elf` and convert to `nso` to use with Atmosphere.
+# IPSwitch
+Use text files to generate `.ips` patches or patched `nso` to use with Atmosphere.
 
-Pretty sure Atmosphere may have some better patching implementation down the line tho.
-
-To use this, you need to have extracted a game's exefs and convert its content you want to edit to an `elf`. 
+To use `.ips` patches make sure you have Atmosphere 44e2412a (July 30, 2018) or later loader build.
 ---
 See example for details.
 
@@ -15,6 +13,7 @@ See example for details.
 ## Build
 - DevkitA64
 - libnx
+- [lz4](https://github.com/lz4/lz4) compiled with DevkitA64
 
 `make`
 
@@ -30,4 +29,3 @@ See example
 - Improve selection interface
 - Support other than 'main.elf'
 - Toggle an edit enable or disable
-- Progress bar
