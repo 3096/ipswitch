@@ -1,7 +1,43 @@
 #include "util.h"
 
+StrList* getStrList() {
+    StrList* list_ptr = malloc(sizeof(StrList));
+    list_ptr->size = 0;
+    list_ptr->size_max = 0;
+    list_ptr->str_list = NULL;
+    list_ptr->str_list_ptr = NULL;
+    return list_ptr;
+}
+
+void addToStrList(StrList* list_ptr, const char* str) {
+    if ( list_ptr->size >= list_ptr->size_max ){
+        list_ptr->size_max = list_ptr->size + 4;
+        list_ptr->str_list = realloc(list_ptr->str_list, list_ptr->size_max * sizeof(String));
+        list_ptr->str_list_ptr = realloc(list_ptr->str_list_ptr, list_ptr->size_max * sizeof(char*));
+    }
+    strcpy((char*)&list_ptr->str_list[list_ptr->size], str);
+    list_ptr->str_list_ptr[list_ptr->size] = list_ptr->str_list[list_ptr->size];
+    list_ptr->size++;
+}
+
+void freeStrList(StrList* list_ptr) {
+    free(list_ptr->str_list_ptr);
+    free(list_ptr->str_list);
+    free(list_ptr);
+}
+
 int isValidHexStr(const char* str)
     { return strlen(str) == strspn(str, VALID_HEX_CHAR); }
+
+int strcpysize(char* dest, const char* src, size_t size) {
+    size_t i = 0;
+    while(i < size && src[i] != '\0') {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+    return i;
+}
 
 int isDirectory(const char* path) {
     struct stat statbuf;
@@ -41,48 +77,41 @@ void selectIndex(int* selection, char* list[], int size, int change) {
     printf("\rUsing: %s", list[*selection]);
 }
 
-int selectFromList(int* selection, char* list[], int size) {
+u64 selectFromList(int* selection, char* list[], int size) {
     if(size <= 0) {
         if(userConfirm("Error: list is empty"))
-            return -1;
+            return 0;
         else
-            return 1;
+            return KEY_PLUS;
     }
 
     selectIndex(selection, list, size, 0);
 
+    u64 kDownPrevious = hidKeysDown(CONTROLLER_P1_AUTO);
     while(appletMainLoop()) {
         hidScanInput();
         u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
         if (kDown & KEY_UP)
             selectIndex(selection, list, size, -1);
-
-        if (kDown & KEY_DOWN)
+        else if (kDown & KEY_DOWN)
             selectIndex(selection, list, size, 1);
-
-        if (kDown & KEY_LEFT)
+        else if (kDown & KEY_LEFT)
             selectIndex(selection, list, size, -5);
-
-        if (kDown & KEY_RIGHT)
+        else if (kDown & KEY_RIGHT)
             selectIndex(selection, list, size, 5);
-
-        if (kDown & KEY_A) {
+        else if(kDown > kDownPrevious) {
             printf("\n");
-            return 0;
+            return kDown;
         }
-
-        if (kDown & KEY_PLUS) {
-            printf("\n");
-            return 1;
-        }
+        kDownPrevious = kDown;
 
         gfxFlushBuffers();
         gfxSwapBuffers();
         gfxWaitForVsync();
     }
 
-    return -1;
+    return 0;
 }
 
 bool userConfirm(const char * msg) {
@@ -106,4 +135,12 @@ bool userConfirm(const char * msg) {
         kDownPrevious = kDown;
     }
     return false;
+}
+
+void printInProgress(const char * msg) {
+    printf("%s... ", msg);
+}
+
+void printDone() {
+    printf("Done\n");
 }

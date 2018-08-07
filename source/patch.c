@@ -1,5 +1,11 @@
 #include "patch.h"
 
+void getPatchTextPath(const PatchTextTarget* p_target, char* path) {
+    strcpy(path, p_target->patch_txt_dir);
+    strcat(path, p_target->nso_name);
+    strcat(path, PATCH_TEXT_FORMAT);
+}
+
 int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian) {
     char offset_str[9];
     offset_str[8] = '\0';
@@ -21,7 +27,110 @@ int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian) {
     return 0;
 }
 
+int parsePatchText(const PatchTextTarget* p_target) {
+    printf("Reading patch text file:\n\n");
+
+    FILE * patch_file;
+    char patch_txt_path[0x100];
+    getPatchTextPath(p_target, patch_txt_path);
+    patch_file = fopen(patch_txt_path, "r");
+    if (patch_file == NULL) {
+        fclose(patch_file);
+        printf("Cannot open %s, ", patch_txt_path);
+        return -2;
+    }
+
+    // line buffers
+    const size_t LINE_MAX_SIZE = 0x100;
+    char line[LINE_MAX_SIZE]; line[LINE_MAX_SIZE] = '\0';
+    char last_comment[LINE_MAX_SIZE]; last_comment[LINE_MAX_SIZE] = '\0';
+
+    // line 1 Endianness 
+    bool isLittleEndian = true;
+    if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
+        if(line[0] != '@') {
+            printf("Error: Please specify Endianess in the first line using");
+            printf("\n\"@little-endian\" or \"@big-endian\"\n");
+            fclose(patch_file);
+            return -3;
+        } else {
+            if(line[1] == 'b' || line[1] == 'B')
+                isLittleEndian = false;
+        }
+    }
+    bool isIPS = false; char nso_build_id[65]; nso_build_id[64] = '\0';
+    if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
+        // line 2 nso build id, nso_name doubles as pchtxt file name here
+        char first_three[4]; strcpysize(first_three, p_target->nso_name, 3);
+        if( (strcmp(first_three, "ips") == 0
+            || strcmp(first_three, "IPS") == 0) && 
+            (*(u64*)line == NSOBID_MAGIC_LOWER
+            || *(u64*)line == NSOBID_MAGIC_UPPER) &&
+            strlen(line) > 8 ) {
+
+            isIPS = true;
+            // parse nso build id
+            for (int i = 0; i < 64; i++) {
+                char buf[2]; buf[1] = '\0';
+                buf[0] = line[i+8];
+                if(isValidHexStr(buf)) {
+                    nso_build_id[i] = buf[0];
+                } else {
+                    nso_build_id[i] = '\0';
+                    break;
+                }
+            }
+
+            fgets(line, LINE_MAX_SIZE-1, patch_file);
+        }
+
+        // parsing body
+        bool enabled = false;
+        do {
+            switch(line[0]){
+            case '#':
+                printf("\n%s", line);
+                continue;
+            case '/':
+                strcpy(last_comment, line);
+                continue;
+            case '@':
+                if (line[1] == 's' || line[1] == 'S') {
+                    break; // parsing reached "@stop"
+                }
+                else if (line[1] == 'e' || line[1] == 'E') {
+                    enabled = true;
+                    printf("\nPatching %s", last_comment);
+                }
+                else {
+                    enabled = false;
+                }
+                continue;
+            default:
+                if(!enabled)
+                    continue;
+                if(strlen(line) < 17)
+                    continue;
+
+                Patch patch; int ret = 0;
+                ret = getPatchFromLine(line, &patch, isLittleEndian);
+                if(ret != 0)
+                    continue;
+
+                printf("%08X: ", patch.offset);
+                printf("%08X\n", patch.value);
+
+                //add patch to a list
+            }
+        } while (fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL);
+    }
+
+    fclose(patch_file);
+    return 0;
+}
+
 int patchTarget(PatchTarget target) {
+    int ret;
     printf("Reading elf... ");
 
     size_t elf_len;
@@ -64,7 +173,10 @@ int patchTarget(PatchTarget target) {
             continue;
         }
         if(line[0] == '@') {
-            if(line[1] == 'e') {
+            if (line[1] == 's') {
+                break;
+            }
+            else if (line[1] == 'e') {
                 enabled = true;
                 printf("\nPatching %s", last_comment);
             }
@@ -78,12 +190,12 @@ int patchTarget(PatchTarget target) {
             continue;
 
         Patch patch;
-        int ret = getPatchFromLine(line, &patch, isLittleEndian);
+        ret = getPatchFromLine(line, &patch, isLittleEndian);
         if(ret != 0)
         	continue;
 
-        printf("%08X ", patch.offset);
-        printf("%08X ", *(u32*)(elf+patch.offset));
+        printf("%08X: ", patch.offset);
+        printf("%08X -> ", *(u32*)(elf+patch.offset));
         printf("%08X\n", patch.value);
 
         *(u32*)(elf+patch.offset) = patch.value;
@@ -96,9 +208,15 @@ int patchTarget(PatchTarget target) {
     char out_dir[0x100];
     strcpy(out_dir, ATMOS_TITLE_DIR);
     strcat(out_dir, target.tid_str);
-    strcat(out_dir, "/exefs/main");
+    mkdir(out_dir, 0700);
+    strcat(out_dir, "/exefs");
+    mkdir(out_dir, 0700);
+    strcat(out_dir, "/main");
 
-    elf2nso(elf, elf_len, out_dir);
+    printf("\n%s\n", out_dir);
+    printf("\n%s\n", out_dir);
 
-	return 0;
+    ret = elf2nso(elf, elf_len, out_dir);
+    free(elf);
+    return ret;
 }

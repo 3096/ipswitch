@@ -10,16 +10,33 @@
 
 #define VALID_HEX_CHAR "0123456789abcdefABCDEF"
 
+typedef char String[0x100];
+
+typedef struct {
+	size_t size;
+    size_t size_max;
+    String* str_list;
+    char** str_list_ptr;
+} StrList;
+
+StrList* getStrList();
+void addToStrList(StrList* list_ptr, const char* str);
+void freeStrList(StrList* list_ptr);
+
 int isValidHexStr(const char* str);
 
 int isDirectory(const char* path);
 
 int strEndianSwap(char* str);
 
-void selectIndex(int* selection, char* list[], int size, int change);
+int strcpysize(char* dest, const char* src, size_t size);
 
-int selectFromList(int* selection, char* list[], int size);
+void selectIndex(int* selection, char* list[], int size, int change);
+u64 selectFromList(int* selection, char* list[], int size);
 
 bool userConfirm(const char* msg);
+
+void printInProgress(const char * msg);
+void printDone();
 
 #endif
