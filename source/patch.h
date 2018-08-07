@@ -33,10 +33,24 @@ typedef struct {
     u32 offset;
     u32 value;
 } Patch;
+typedef struct PatchListNode {
+	Patch patch;
+	struct PatchListNode* next;
+} PatchListNode;
+typedef struct {
+	size_t size;
+    PatchListNode* first;
+    PatchListNode* head;
+    char nsobid[65];
+} PatchList;
+
+PatchList* initPatchList();
+int addPatchToList(PatchList* pchlist, Patch patch);
+void freePatchList(PatchList* pchlist);
 
 int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian);
 
-int parsePatchText(const PatchTextTarget* p_target);
+int parsePatchText(const PatchTextTarget* p_target, PatchList* pchlist);
 
 int patchTarget(PatchTarget target);
 

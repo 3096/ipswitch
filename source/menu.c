@@ -23,9 +23,8 @@ void titleSelect() {
                 continue;
             }
             memcpy(tid_str, ent->d_name, 16);
-            printf("tid: %s\n", tid_str);
+
             if(!isValidHexStr(tid_str)) {
-                printf("!isValidHexStr: %s\n", tid_str);
                 continue;
             }
 
@@ -65,7 +64,7 @@ void titleSelect() {
         strcat(pchtxt_target.patch_txt_dir, title_list->str_list[selection]);
         strcat(pchtxt_target.patch_txt_dir, "/");
 
-        strcpy(pchtxt_target.nso_name, "ips");
+        strcpy(pchtxt_target.nso_name, "ips-main");
 
         if (kDown & KEY_A) {
             printf("Patching elf content...\n");
@@ -81,7 +80,17 @@ void titleSelect() {
         if (kDown & KEY_Y) {
             printf("Testing parsePatchText...\n");
 
-            rc = parsePatchText(&pchtxt_target);
+            PatchList* pchlist = initPatchList();
+            rc = parsePatchText(&pchtxt_target, pchlist);
+
+            printf("\nnsobid len: %ld value: %s\n\n", strlen(pchlist->nsobid), pchlist->nsobid);
+
+            PatchListNode* node = pchlist->first;
+            while(node != NULL) {
+                printf("%x %x\n", node->patch.offset, node->patch.value);
+                node = node->next;
+            }
+            free(pchlist);
 
             if(R_SUCCEEDED(rc))
                 printf("Done\n\nAll Done\n");

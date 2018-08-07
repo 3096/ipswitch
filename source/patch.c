@@ -27,7 +27,46 @@ int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian) {
     return 0;
 }
 
-int parsePatchText(const PatchTextTarget* p_target) {
+PatchList* initPatchList() {
+    PatchList* pchlist = malloc(sizeof(PatchList));
+    pchlist->size = 0;
+    pchlist->first = NULL;
+    pchlist->head = NULL;
+    pchlist->nsobid[0] = '\0';
+    return pchlist;
+}
+
+PatchListNode* getPatchNode(Patch patch) {
+    PatchListNode* new_node = malloc(sizeof(PatchListNode));
+    new_node->patch = patch;
+    new_node->next = NULL;
+    return new_node;
+}
+
+int addPatchToList(PatchList* pchlist, Patch patch) {
+    PatchListNode* new_node = getPatchNode(patch);
+    if(pchlist->head == NULL) {
+        pchlist->first = new_node;
+        pchlist->head = new_node;
+    } else {
+        pchlist->head->next = new_node;
+        pchlist->head = new_node;
+    }
+    pchlist->size++;
+
+    return 0;
+}
+
+void freePatchList(PatchList* pchlist) {
+    PatchListNode* node = pchlist->first;
+    while(node != NULL) {
+        node = node->next;
+        free(node);
+    }
+    free(pchlist);
+}
+
+int parsePatchText(const PatchTextTarget* p_target, PatchList* pchlist) {
     printf("Reading patch text file:\n\n");
 
     FILE * patch_file;
@@ -58,7 +97,7 @@ int parsePatchText(const PatchTextTarget* p_target) {
                 isLittleEndian = false;
         }
     }
-    bool isIPS = false; char nso_build_id[65]; nso_build_id[64] = '\0';
+    pchlist->nsobid[64] = '\0';
     if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
         // line 2 nso build id, nso_name doubles as pchtxt file name here
         char first_three[4]; strcpysize(first_three, p_target->nso_name, 3);
@@ -67,16 +106,14 @@ int parsePatchText(const PatchTextTarget* p_target) {
             (*(u64*)line == NSOBID_MAGIC_LOWER
             || *(u64*)line == NSOBID_MAGIC_UPPER) &&
             strlen(line) > 8 ) {
-
-            isIPS = true;
             // parse nso build id
             for (int i = 0; i < 64; i++) {
                 char buf[2]; buf[1] = '\0';
                 buf[0] = line[i+8];
                 if(isValidHexStr(buf)) {
-                    nso_build_id[i] = buf[0];
+                    pchlist->nsobid[i] = buf[0];
                 } else {
-                    nso_build_id[i] = '\0';
+                    pchlist->nsobid[i] = '\0';
                     break;
                 }
             }
@@ -120,7 +157,7 @@ int parsePatchText(const PatchTextTarget* p_target) {
                 printf("%08X: ", patch.offset);
                 printf("%08X\n", patch.value);
 
-                //add patch to a list
+                addPatchToList(pchlist, patch);
             }
         } while (fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL);
     }
