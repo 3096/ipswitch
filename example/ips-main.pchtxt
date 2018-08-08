@@ -1,4 +1,5 @@
 @little-endian
+@nsobid-034C8FA7A63B7A87F96F408B2AEFFF6C // <- this is for ips pchtxt file
 #01003BC0000A0000 Splatoon 2 3.1.0 USA
 
 // Set money to 6969699
@@ -7,14 +8,13 @@
 00197950 602C8B72
 
 // Set sea snail to 696
-@enabled
+@disabled
 00197998 00578052
 
 @stop
 //----------------------------------------------------------------------------
 // Not Used/Deprecated
 
-@nsobid-F1D66E4030912F7641E84AB1B61F3F76
 #01003BC0000A0000 Splatoon™ 2 3.0.1 USA
 
 // Set money to 6969699
