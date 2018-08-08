@@ -41,20 +41,6 @@ void titleSelect() {
         if (kDown & KEY_PLUS)
             break;
 
-        // I'll clean up this part later ofc
-        PatchTarget target;
-
-        memcpy(target.tid_str, title_list->str_list[selection], 16);
-        target.tid_str[16] = '\0';
-
-        strcpy(target.patch_dir, IPSWITCH_DIR);
-        strcat(target.patch_dir, title_list->str_list[selection]);
-
-        strcpy(target.elf_dir, target.patch_dir);
-
-        strcat(target.patch_dir, "/main.swelfpatch");
-        strcat(target.elf_dir, "/main.elf");
-
         PatchTextTarget pchtxt_target;
         
         memcpy(pchtxt_target.tid_str, title_list->str_list[selection], 16);
@@ -67,45 +53,29 @@ void titleSelect() {
         strcpy(pchtxt_target.nso_name, "ips-main");
 
         if (kDown & KEY_A) {
-            printf("Patching elf content...\n");
-
-            rc = patchTarget(target);
-
-            if(R_SUCCEEDED(rc))
-                printf("Done\n\nAll Done\n");
-            else
-                printf("Failed: %d\n", rc);
-        }
-
-        if (kDown & KEY_Y) {
-            printf("Testing parsePatchText...\n");
-
             PatchList* pchlist = initPatchList();
-            rc = parsePatchText(&pchtxt_target, pchlist);
+            pchlist->target = pchtxt_target;
 
-            printf("\nnsobid len: %ld value: %s\n\n", strlen(pchlist->nsobid), pchlist->nsobid);
+            // TODO: check rc
+            rc = parsePatchText(pchlist);
+            
+            rc = patchTarget(pchlist);
 
-            PatchListNode* node = pchlist->first;
-            while(node != NULL) {
-                printf("%x %x\n", node->patch.offset, node->patch.value);
-                node = node->next;
-            }
             free(pchlist);
 
             if(R_SUCCEEDED(rc))
-                printf("Done\n\nAll Done\n");
+                printf("\nAll Done\n");
             else
-                printf("Failed: %d\n", rc);
+                printf("\nFailed: %d\n", rc);
         }
 
         if (kDown & KEY_X) {
-            printf("Deleting patched nso...\n");
-            char nso_dir[0x100];
-            strcpy(nso_dir, ATMOS_TITLE_DIR);
-            strcat(nso_dir, target.tid_str);
-            strcat(nso_dir, "/exefs");
-            strcat(nso_dir, "/main");
-            remove(nso_dir);
+            printf("Deleting ips...\n");
+            char ips_dir[0x100];
+            strcpy(ips_dir, ATMOS_EXEPCH_DIR);
+            strcat(ips_dir, pchtxt_target.tid_str);
+            remove(ips_dir);
+            printf("%s deleted.\n", ips_dir);
         }
     }
 

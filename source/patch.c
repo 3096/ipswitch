@@ -66,12 +66,12 @@ void freePatchList(PatchList* pchlist) {
     free(pchlist);
 }
 
-int parsePatchText(const PatchTextTarget* p_target, PatchList* pchlist) {
-    printf("Reading patch text file:\n\n");
+int parsePatchText(PatchList* pchlist) {
+    printf("\nReading patch text file:\n");
 
     FILE * patch_file;
     char patch_txt_path[0x100];
-    getPatchTextPath(p_target, patch_txt_path);
+    getPatchTextPath(&pchlist->target, patch_txt_path);
     patch_file = fopen(patch_txt_path, "r");
     if (patch_file == NULL) {
         fclose(patch_file);
@@ -100,7 +100,8 @@ int parsePatchText(const PatchTextTarget* p_target, PatchList* pchlist) {
     pchlist->nsobid[64] = '\0';
     if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
         // line 2 nso build id, nso_name doubles as pchtxt file name here
-        char first_three[4]; strcpysize(first_three, p_target->nso_name, 3);
+        char first_three[4];
+        strcpysize(first_three, pchlist->target.nso_name, 3);
         if( (strcmp(first_three, "ips") == 0
             || strcmp(first_three, "IPS") == 0) && 
             (*(u64*)line == NSOBID_MAGIC_LOWER
@@ -126,18 +127,18 @@ int parsePatchText(const PatchTextTarget* p_target, PatchList* pchlist) {
         do {
             switch(line[0]){
             case '#':
-                printf("\n%s", line);
+                printf("\n%s\n", line);
                 continue;
             case '/':
                 strcpy(last_comment, line);
                 continue;
             case '@':
                 if (line[1] == 's' || line[1] == 'S') {
-                    break; // parsing reached "@stop"
+                    goto stop; // parsing reached "@stop"
                 }
                 else if (line[1] == 'e' || line[1] == 'E') {
                     enabled = true;
-                    printf("\nPatching %s", last_comment);
+                    printf("Patch read: %s", last_comment);
                 }
                 else {
                     enabled = false;
@@ -154,106 +155,111 @@ int parsePatchText(const PatchTextTarget* p_target, PatchList* pchlist) {
                 if(ret != 0)
                     continue;
 
-                printf("%08X: ", patch.offset);
-                printf("%08X\n", patch.value);
-
                 addPatchToList(pchlist, patch);
             }
         } while (fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL);
     }
-
+stop:
     fclose(patch_file);
     return 0;
 }
 
-int patchTarget(PatchTarget target) {
+int patchTarget(const PatchList* pchlist) {
     int ret;
-    printf("Reading elf... ");
 
-    size_t elf_len;
-    uint8_t* elf = ReadEntireFile(target.elf_dir, &elf_len);
-    if (elf == NULL) {
-        printf("Failed to open %s, ", target.elf_dir);
-        return -1;
+    uint8_t* out_file_buf = NULL;
+    size_t out_file_buf_size = 0;
+
+    PatchMode mode = PATCH_MODE_IPS;
+    const size_t IPS_HEAD_LEN = strlen(IPS32_HEAD_MAGIC);
+    const size_t IPS_FOOT_LEN = strlen(IPS32_FOOT_MAGIC);
+    if(strlen(pchlist->nsobid) == 0) {
+        mode = PATCH_MODE_ELF2NSO;
+        printInProgress("\nReading elf");
+        char elf_dir[0x100];
+        strcpy(elf_dir, pchlist->target.patch_txt_dir);
+        strcat(elf_dir, pchlist->target.nso_name);
+        strcat(elf_dir, ".elf");
+        out_file_buf = ReadEntireFile(elf_dir, &out_file_buf_size);
+        if (out_file_buf == NULL) {
+            printf("Failed to open %s, ", elf_dir);
+            return -1;
+        }
+        printDone();
+    } else {
+        out_file_buf_size = IPS_HEAD_LEN
+            + IPS32_4BYTE_PATCHBLOCK_SIZE * pchlist->size + IPS_FOOT_LEN;
+        out_file_buf = malloc(out_file_buf_size);
+        memcpy(out_file_buf, IPS32_HEAD_MAGIC, IPS_HEAD_LEN);
     }
 
-    printf("Done\n\nApplying patches...\n");
+    printf("\nApplying patches:\n\n");
 
-    FILE * patch_file;
-    int len = 0x99;
-    char line[len+1];
-    line[len] = '\0';
-    char last_comment[len+1];
+    PatchListNode* node = pchlist->first;
+    for(int i = 0; node != NULL; i++) {
+        printf("%08X: ", node->patch.offset);
 
-    patch_file = fopen(target.patch_dir, "r");
-    if (patch_file == NULL) {
-        printf("Cannot open %s, ", target.patch_dir);
-        return -2;
-    }
-
-    bool isLittleEndian = true;
-    if(fgets(line, len, patch_file) != NULL) {
-        if(line[0] != '@') {
-            printf("Error: Please specify Endianess in the first line using\n");
-            printf("\"@little-endian\" or \"@big-endian\"\n");
-            return -3;
+        if(mode == PATCH_MODE_ELF2NSO) {
+            printf("%08X ->", *(u32*)&out_file_buf[node->patch.offset]);
+            *(u32*)&out_file_buf[node->patch.offset] = node->patch.value;
         } else {
-            if(line[1] == 'b' || line[1] == 'B')
-                isLittleEndian = false;
+            size_t cur_block_offset = 
+                IPS_HEAD_LEN + IPS32_4BYTE_PATCHBLOCK_SIZE * i;
+
+            u32 offset_BE = node->patch.offset;
+            bytesEndianSwap((u8*)&offset_BE, sizeof(offset_BE));
+            *(u32*)&out_file_buf[cur_block_offset] = offset_BE;
+
+            u16 len_BE = 0x400; // as 4 in big endian
+            *(u32*)&out_file_buf[cur_block_offset + 4] = len_BE;
+
+            u32 value_BE = node->patch.value;
+            *(u32*)&out_file_buf[cur_block_offset + 6] = value_BE;
         }
+        printf("%08X\n", node->patch.value);
+        
+        node = node->next;
     }
 
-    bool enabled = false;
-    while (fgets(line, len, patch_file) != NULL) {
-        if(line[0] == '/') {
-            strcpy(last_comment, line);
-            continue;
-        }
-        if(line[0] == '@') {
-            if (line[1] == 's') {
-                break;
-            }
-            else if (line[1] == 'e') {
-                enabled = true;
-                printf("\nPatching %s", last_comment);
-            }
-            else
-                enabled = false;
-            continue;
-        }
-        if(!enabled)
-        	continue;
-        if(strlen(line) < 17)
-            continue;
+    char out_file_path[0x100]; FILE* out;
+    if(mode == PATCH_MODE_ELF2NSO) {
+        strcpy(out_file_path, ATMOS_TITLE_DIR);
+        strcat(out_file_path, pchlist->target.tid_str);
+        mkdir(out_file_path, 0700);
+        strcat(out_file_path, "/exefs/");
+        mkdir(out_file_path, 0700);
+        strcat(out_file_path, pchlist->target.nso_name);
 
-        Patch patch;
-        ret = getPatchFromLine(line, &patch, isLittleEndian);
-        if(ret != 0)
-        	continue;
+        printInProgress("\nCompressing into nso");
+        out = fopen(out_file_path, "wb");
+        ret = elf2nso(out_file_buf, out_file_buf_size, out);
+        printDone();
 
-        printf("%08X: ", patch.offset);
-        printf("%08X -> ", *(u32*)(elf+patch.offset));
-        printf("%08X\n", patch.value);
+        printf("\nNSO output to %s\n", out_file_path);
+        
+    } else {
+        memcpy(out_file_buf+out_file_buf_size-IPS_FOOT_LEN,
+            IPS32_FOOT_MAGIC, IPS_FOOT_LEN);
 
-        *(u32*)(elf+patch.offset) = patch.value;
+        strcpy(out_file_path, ATMOS_EXEPCH_DIR);
+        mkdir(out_file_path, 0700);
+        strcat(out_file_path, pchlist->target.tid_str);
+        mkdir(out_file_path, 0700);
+        strcat(out_file_path, "/");
+        strcat(out_file_path, pchlist->nsobid);
+        strcat(out_file_path, ".ips");
+        
+        printInProgress("\nWriting .ips file");
+        out = fopen(out_file_path, "wb");
+        ret = fwrite(out_file_buf, out_file_buf_size, 1, out);
+        if(ret == 1) ret = 0;
+        printDone();
+
+        printf("\nIPS output to %s\n", out_file_path);
     }
 
-    fclose(patch_file);
+    fclose(out);
+    free(out_file_buf);
 
-    printf("\nDone\n\nCompressing into nso... ");
-
-    char out_dir[0x100];
-    strcpy(out_dir, ATMOS_TITLE_DIR);
-    strcat(out_dir, target.tid_str);
-    mkdir(out_dir, 0700);
-    strcat(out_dir, "/exefs");
-    mkdir(out_dir, 0700);
-    strcat(out_dir, "/main");
-
-    printf("\n%s\n", out_dir);
-    printf("\n%s\n", out_dir);
-
-    ret = elf2nso(elf, elf_len, out_dir);
-    free(elf);
     return ret;
 }

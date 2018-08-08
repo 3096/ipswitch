@@ -38,6 +38,6 @@ typedef struct {
 
 uint8_t* ReadEntireFile(const char* fn, size_t* len_out);
 
-int elf2nso(uint8_t* elf, size_t elf_len, char* out_dir);
+int elf2nso(uint8_t* elf, size_t elf_len, FILE* out);
 
 #endif

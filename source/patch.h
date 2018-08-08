@@ -11,9 +11,20 @@
 #define PATCH_TEXT_FORMAT ".pchtxt"
 
 #define ATMOS_TITLE_DIR "/atmosphere/titles/"
+#define ATMOS_EXEPCH_DIR "/atmosphere/exefs_patches/"
 
 #define NSOBID_MAGIC_LOWER 0x2D6469626F736E40 // "@nsobid-"
 #define NSOBID_MAGIC_UPPER 0x2D4449424F534E40 // "@NSOBID-"
+
+#define IPS32_HEAD_MAGIC "IPS32"
+#define IPS32_FOOT_MAGIC "EEOF"
+
+#define IPS32_4BYTE_PATCHBLOCK_SIZE 0xA
+
+typedef enum {
+	PATCH_MODE_ELF2NSO = 0,
+	PATCH_MODE_IPS,
+} PatchMode;
 
 typedef struct {
 	char tid_str[17];
@@ -41,6 +52,7 @@ typedef struct {
 	size_t size;
     PatchListNode* first;
     PatchListNode* head;
+    PatchTextTarget target;
     char nsobid[65];
 } PatchList;
 
@@ -50,8 +62,8 @@ void freePatchList(PatchList* pchlist);
 
 int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian);
 
-int parsePatchText(const PatchTextTarget* p_target, PatchList* pchlist);
+int parsePatchText(PatchList* pchlist);
 
-int patchTarget(PatchTarget target);
+int patchTarget(const PatchList* pchlist);
 
 #endif

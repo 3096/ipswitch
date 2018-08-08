@@ -27,7 +27,7 @@ uint8_t* ReadEntireFile(const char* fn, size_t* len_out) {
     return buf;
 }
 
-int elf2nso(uint8_t* elf, size_t elf_len, char* out_dir) {
+int elf2nso(uint8_t* elf, size_t elf_len, FILE* out) {
     NsoHeader nso_hdr;
     memset(&nso_hdr, 0, sizeof(nso_hdr));
     memcpy(nso_hdr.Magic, "NSO0", 4);
@@ -118,8 +118,6 @@ int elf2nso(uint8_t* elf, size_t elf_len, char* out_dir) {
         file_off += comp_sz[i];
     }
 
-    FILE* out = fopen(out_dir, "wb");
-
     if (out == NULL) {
         fprintf(stderr, "Failed to open output file!\n");
         return EXIT_FAILURE;
@@ -130,8 +128,6 @@ int elf2nso(uint8_t* elf, size_t elf_len, char* out_dir) {
 
     for (i=0; i<3; i++)
         fwrite(comp_buf[i], comp_sz[i], 1, out);
-
-    fclose(out);
 
     return EXIT_SUCCESS;
 }

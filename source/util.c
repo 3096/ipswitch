@@ -46,6 +46,18 @@ int isDirectory(const char* path) {
     return S_ISDIR(statbuf.st_mode);
 }
 
+int bytesEndianSwap(u8* bytes, size_t size) {
+    char * buffer = malloc(size);
+
+    for(int i = 0; i < size; i++) {
+        buffer[size-1-i] = bytes[i];
+    }
+    memcpy(bytes, buffer, size);
+
+    free(buffer);
+    return 0;
+}
+
 int strEndianSwap(char* str) {
     size_t size = strlen(str);
     if(size%2 != 0)
@@ -56,8 +68,8 @@ int strEndianSwap(char* str) {
         buffer[size-i-2] = str[i];
         buffer[size-i-1] = str[i+1];
     }
-
     memcpy(str, buffer, size);
+    
     free(buffer);
     return 0;
 }

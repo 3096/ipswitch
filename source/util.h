@@ -27,6 +27,10 @@ int isValidHexStr(const char* str);
 
 int isDirectory(const char* path);
 
+int bytesEndianSwap(u8* buf, size_t size);
+
+// Does endian swap on str representation of hex
+// e.g. "EFBEADDE" -> "DEADBEEF"
 int strEndianSwap(char* str);
 
 int strcpysize(char* dest, const char* src, size_t size);
