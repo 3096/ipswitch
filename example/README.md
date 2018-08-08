@@ -23,11 +23,11 @@ The second line is mandatory to specify the nso's build id with `@nsobid-{a_bunc
 ---
 The patches are represented in lines of offset and value pair, each are 4 bytes. 
 
-Offset will always be in Big-Endian, and it's the absolute offset from either uncompressed nso file or elf file. The value can be either Big-Endian or Little-Endian, but it must be specified in the first line.
+Offset will always be in Big-Endian, and is the absolute offset from uncompressed nso file (or your elf file). The value can be either Big-Endian or Little-Endian, but it must be specified in the first line.
 
-For every patch, it is necessary to specify whether it is enabled or disabled by putting `@enabled` or `@disabled` flag on top of it. When encountering this flag, the program will print the last pure comment line that it saw, in attempt to explain the patch. Thus, it's also necessary to put a comment before each patch.
+For every patch, it is necessary to specify whether it is enabled or disabled by putting `@enabled` or `@disabled` flag on top of it. When encountering this flag, the program will print the last "pure comment line" from the file, in attempt to explain the patch. Thus, it's also necessary to put a comment before each patch about what the patch does.
 
-Comments are marked with '/' character:
+Comments are marked with `/` character:
 
 ```// This is a comment.```
 
@@ -45,7 +45,7 @@ Offset   Some Value
 ```
 
 ---
-`@stop` can be used in the end of valid patches, telling the program to stop reading any patches that might come after this specifier, useful for leaving in deprecated patches for records.
+`@stop` can be used in the end of valid patches, telling the program to stop reading any patches that might come after this flag, in case you want to leave in any deprecated patches just for your own records.
 
 ---
 Lines starting with `#` will always be printed when the program parses the text file, so it can be used to provide extra information, like:
@@ -54,4 +54,4 @@ Lines starting with `#` will always be printed when the program parses the text 
 
 ---
 ### Editing the text file
-Please don't use Windows Notepad. 99% chance you'll end up with some bad encoding that will cause this to not work. Use a real text editor like Sublime or Notepad++. Heck, use a hex editor, if you will, to make sure no extra bytes are there to break things.
+Please don't use Windows Notepad. 99% chance you'll end up with some bad encoding that will cause this to not work. Use a real text editor like Sublime, Atom, or Notepad++. Heck, use a hex editor, if you will, to make sure no extra bytes are there to break things.

@@ -1,7 +1,7 @@
 # IPSwitch
 Use text files to generate `.ips` patches or patched `nso` to use with Atmosphere.
 
-###To use `.ips` patches make sure you have Atmosphere 44e2412a (July 30, 2018) or later loader build.
+### To use `.ips` patches make sure you have Atmosphere 44e2412a (July 30, 2018) or later loader build.
 
 See example for details.
 
