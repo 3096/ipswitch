@@ -79,6 +79,9 @@ int parsePatchText(PatchList* pchlist) {
         return -2;
     }
 
+    // some values used in parsing
+    int offset_shift = 0;
+
     // line buffers
     const size_t LINE_MAX_SIZE = 0x100;
     char line[LINE_MAX_SIZE]; line[LINE_MAX_SIZE] = '\0';
@@ -102,8 +105,8 @@ int parsePatchText(PatchList* pchlist) {
         // line 2 nso build id, nso_name doubles as pchtxt file name here
         char first_three[4];
         strcpysize(first_three, pchlist->target.nso_name, 3);
-        if( (strcmp(first_three, "ips") == 0
-            || strcmp(first_three, "IPS") == 0) && 
+        strToLowerCase(first_three);
+        if( strcmp(first_three, "ips") == 0 && 
             (*(u64*)line == NSOBID_MAGIC_LOWER
             || *(u64*)line == NSOBID_MAGIC_UPPER) &&
             strlen(line) > 8 ) {
@@ -119,7 +122,9 @@ int parsePatchText(PatchList* pchlist) {
                 }
             }
 
-            fgets(line, LINE_MAX_SIZE-1, patch_file);
+            if(fgets(line, LINE_MAX_SIZE-1, patch_file) == NULL) {
+                goto stop;
+            }
         }
 
         // parsing body
@@ -133,14 +138,37 @@ int parsePatchText(PatchList* pchlist) {
                 strcpy(last_comment, line);
                 continue;
             case '@':
-                if (line[1] == 's' || line[1] == 'S') {
-                    goto stop; // parsing reached "@stop"
-                }
-                else if (line[1] == 'e' || line[1] == 'E') {
+
+                switch(line[1]) {
+                case 'e':
+                case 'E':
                     enabled = true;
                     printf("Patch read: %s", last_comment);
-                }
-                else {
+                    break;
+                case 'f':
+                case 'F':
+                    if(strlen(line) < 7)
+                        break;
+                    size_t flag_name_len = strcspn(&line[6], " /\n");
+                    char flag_name_buf[0x100];
+                    strcpysize(flag_name_buf, &line[6], flag_name_len);
+                    strToLowerCase(flag_name_buf);
+
+                    if(strcmp(flag_name_buf, OFFSET_SHIFT_FLAG) == 0) {
+                        if(strlen(line) < 20)
+                            break;
+                        char flag_val_buf[0x100];
+                        strcpysize(flag_val_buf, &line[6+flag_name_len+1],
+                            strcspn(&line[6+flag_name_len+1], " /\n"));
+                        offset_shift = (int)strtol(flag_val_buf, NULL, 0);
+                        printf("Flag: %s 0x%X\n", 
+                            flag_name_buf, offset_shift);
+                    }
+                    break;
+                case 's':
+                case 'S':
+                    goto stop; // parsing reached "@stop"
+                default:
                     enabled = false;
                 }
                 continue;
@@ -155,6 +183,7 @@ int parsePatchText(PatchList* pchlist) {
                 if(ret != 0)
                     continue;
 
+                patch.offset += offset_shift;
                 addPatchToList(pchlist, patch);
             }
         } while (fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL);

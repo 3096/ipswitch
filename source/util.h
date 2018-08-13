@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include <switch.h>
 
@@ -32,6 +33,8 @@ int bytesEndianSwap(u8* buf, size_t size);
 // Does endian swap on str representation of hex
 // e.g. "EFBEADDE" -> "DEADBEEF"
 int strEndianSwap(char* str);
+
+int strToLowerCase(char* str);
 
 int strcpysize(char* dest, const char* src, size_t size);
 

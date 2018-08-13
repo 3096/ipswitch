@@ -29,6 +29,13 @@ void freeStrList(StrList* list_ptr) {
 int isValidHexStr(const char* str)
     { return strlen(str) == strspn(str, VALID_HEX_CHAR); }
 
+int strToLowerCase(char* str) {
+    for(int i = 0; str[i]; i++){
+      str[i] = tolower(str[i]);
+    }
+    return 0;
+}
+
 int strcpysize(char* dest, const char* src, size_t size) {
     size_t i = 0;
     while(i < size && src[i] != '\0') {

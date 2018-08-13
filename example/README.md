@@ -15,12 +15,14 @@ Run the homebrew and it will let you select a `.pchtxt` and generate either a `.
 `.pchtxt` will be a text file. See the ips-main.pchtxt for some simple Splatoon 2 3.1.0 edit I provided for example.
 
 ---
+### Mandatory Lines
 The first line is mandatory to specify the value's Endianess with character `@`. It should either be `@little-endian` or `@big-endian`.
 
 ---
 The second line is mandatory to specify the nso's build id with `@nsobid-{a_buncha_hex}`. If this is missing, the program will attempt to treat the file as an elf to nso patch.
 
 ---
+### Patches
 The patches are represented in lines of offset and value pair, each are 4 bytes. 
 
 Offset will always be in Big-Endian, and is the absolute offset from uncompressed nso file (or your elf file). The value can be either Big-Endian or Little-Endian, but it must be specified in the first line.
@@ -45,13 +47,29 @@ Offset   Some Value
 ```
 
 ---
+### Flags
+`@flag` can be used to add flags in the patch text. This is what the line should look like:
+
+`@flag {flag_name} {flag_value}`
+
+For now, the only supported flag name is "offset_shift", which allows you to add or substract a certain amount to all patch text offsets. For example, if you want to use offset directly from IDA, you can do
+
+```@flag offset_shift 0x100```
+
+Which will automatically add 0x100 to all offsets, since the raw offset from IDA doesn't include the 0x100 nso header.
+
+See `ips-main.pchtxt` to find out how you can use the flag in it.
+
+---
+### Ending the Patch Text Early
 `@stop` can be used in the end of valid patches, telling the program to stop reading any patches that might come after this flag, in case you want to leave in any deprecated patches just for your own records.
 
 ---
+### # Symbol
 Lines starting with `#` will always be printed when the program parses the text file, so it can be used to provide extra information, like:
 
 ```#01003BC0000A0000 Splatoon™ 2 3.0.1 USA```
 
 ---
-### Editing the text file
+### Editing the Text File
 Please don't use Windows Notepad. 99% chance you'll end up with some bad encoding that will cause this to not work. Use a real text editor like Sublime, Atom, or Notepad++. Heck, use a hex editor, if you will, to make sure no extra bytes are there to break things.
