@@ -1,12 +1,13 @@
+#ifndef PATCH_H
+#define PATCH_H
+
 #include <stdio.h>
 
 #include <switch.h>
 
 #include "util.h"
+#include "console.h"
 #include "elf2nso.h"
-
-#ifndef PATCH_H
-#define PATCH_H
 
 #define PATCH_TEXT_FORMAT ".pchtxt"
 

@@ -35,9 +35,9 @@ void titleSelect() {
 
     while(appletMainLoop())
     {
-        int selection;
+        int selection = 0;
         printf("\n%s\n", "Select Title or Press + to quit:");
-        u64 kDown = selectFromList(&selection, title_list->str_list_ptr, title_list->size);
+        u64 kDown = selectFromList(&selection, title_list);
         if (kDown & KEY_PLUS)
             break;
 

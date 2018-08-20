@@ -1,13 +1,12 @@
+#ifndef UTIL_H
+#define UTIL_H
+
 #include <sys/stat.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 #include <switch.h>
-
-#ifndef UTIL_H
-#define UTIL_H
 
 #define VALID_HEX_CHAR "0123456789abcdefABCDEF"
 
@@ -17,7 +16,6 @@ typedef struct {
 	size_t size;
     size_t size_max;
     String* str_list;
-    char** str_list_ptr;
 } StrList;
 
 StrList* getStrList();
@@ -37,13 +35,5 @@ int strEndianSwap(char* str);
 int strToLowerCase(char* str);
 
 int strcpysize(char* dest, const char* src, size_t size);
-
-void selectIndex(int* selection, char* list[], int size, int change);
-u64 selectFromList(int* selection, char* list[], int size);
-
-bool userConfirm(const char* msg);
-
-void printInProgress(const char * msg);
-void printDone();
 
 #endif
