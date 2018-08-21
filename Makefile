@@ -31,7 +31,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 #     - <libnx folder>/default_icon.jpg
 #---------------------------------------------------------------------------------
 
-GITREV  := $(shell git rev-parse HEAD)
+GITREV  := $(shell git rev-parse HEAD && rm -f $(notdir $(CURDIR)).nacp)
 
 VERSION_MAJOR := 0
 VERSION_MINOR := 1

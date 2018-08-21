@@ -13,7 +13,7 @@ u64 selectFromList(int* selection, StrList* str_list);
 
 bool userConfirm(const char* msg);
 
-void printInProgress(const char * msg);
+void printInProgress(const char* msg);
 void printDone();
 
 #endif

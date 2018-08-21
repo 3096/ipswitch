@@ -153,5 +153,5 @@ void printInProgress(const char * msg) {
 }
 
 void printDone() {
-    printf("Done\n");
+    printf(CONSOLE_ESC(32m) "Done\n" CONSOLE_ESC(m));
 }

@@ -10,7 +10,8 @@ void mainMenu() {
     while(appletMainLoop())
     {
         int selection = 0;
-        printf("\n%s\n", "Select an Operation or Press + to Quit:");
+        printf("\n%s\n", CONSOLE_ESC(1m)
+            "Select an Operation or Press + to Quit:" CONSOLE_ESC(m));
         u64 kDown = selectFromList(&selection, main_menu_list);
 
         if (kDown & KEY_A) {
@@ -43,7 +44,8 @@ u64 patchTextSelect() {
     DIR* dir; struct dirent* dir_ent;
     dir = opendir(IPSWITCH_DIR);
     if(dir==NULL) {
-        printf("Failed to open %s.\n", IPSWITCH_DIR);
+        printf(CONSOLE_ESC(31m) "Failed to open %s.\n" CONSOLE_ESC(m),
+            IPSWITCH_DIR);
     } else {
         while ((dir_ent = readdir(dir))) {
             if(dir_ent->d_type != DT_DIR) {
@@ -65,7 +67,8 @@ u64 patchTextSelect() {
             DIR* subdir; struct dirent* subdir_ent;
             subdir = opendir(subdir_path);
             if(subdir==NULL) {
-                printf("Failed to open %s.\n", subdir_path);
+                printf(CONSOLE_ESC(31m) "Failed to open %s.\n" CONSOLE_ESC(m),
+                    subdir_path);
             } else {
                 while ((subdir_ent = readdir(subdir))) {
                     if(subdir_ent->d_type != DT_REG) {
@@ -92,8 +95,9 @@ u64 patchTextSelect() {
     while(appletMainLoop())
     {
         int selection = 0;
-        printf("\n%s\n",
-            "Press: A to Select Patch Text | B to Go Back | PLUS(+) to quit:");
+        printf("\n%s\n", CONSOLE_ESC(1m)
+            "Press: A to Select Patch Text | B to Go Back | PLUS(+) to quit:"
+            CONSOLE_ESC(m));
         kDown = selectFromList(&selection, pchtxt_list);
         if (kDown & KEY_PLUS || kDown & KEY_B) {
             break;
@@ -117,7 +121,8 @@ u64 patchTextSelect() {
 
             rc = parsePatchText(pchlist);
             if(!R_SUCCEEDED(rc)) {
-                printf("\nFailed: %d\n", rc);
+                printf(CONSOLE_ESC(31m)
+                    "\nParsing failed: %d\n" CONSOLE_ESC(m), rc);
                 continue;
             }
             
@@ -126,9 +131,9 @@ u64 patchTextSelect() {
             free(pchlist);
 
             if(R_SUCCEEDED(rc))
-                printf("\nAll Done\n");
+                printf(CONSOLE_ESC(32m) "\nAll Done\n" CONSOLE_ESC(m));
             else
-                printf("\nFailed: %d\n", rc);
+                printf(CONSOLE_ESC(31m) "\nFailed: %d\n" CONSOLE_ESC(m), rc);
         }
     }
 

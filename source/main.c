@@ -7,7 +7,8 @@ int main(int argc, char **argv)
     gfxInitDefault();
     consoleInit(NULL);
 
-    printf("Welcome to IPSwitch. Do no evil.\n\n");
+    printf(CONSOLE_ESC(35;1m) "Welcome to IPSwitch. Do no evil.\n\n"
+        CONSOLE_ESC(m));
 
     mainMenu();
 

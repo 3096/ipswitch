@@ -73,7 +73,8 @@ int parsePatchText(PatchList* pchlist) {
     patch_file = fopen(pchlist->target.patch_txt_path, "r");
     if (patch_file == NULL) {
         fclose(patch_file);
-        printf("Cannot open %s, ", pchlist->target.patch_txt_path);
+        printf(CONSOLE_ESC(31m) "Cannot open %s, " CONSOLE_ESC(m),
+            pchlist->target.patch_txt_path);
         return -2;
     }
 
@@ -89,7 +90,9 @@ int parsePatchText(PatchList* pchlist) {
     bool isLittleEndian = true;
     if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
         if(line[0] != '@') {
-            printf("Error: Please specify Endianess in the first line using");
+            printf(CONSOLE_ESC(31m)
+                "Error: Please specify Endianess in the first line using"
+                CONSOLE_ESC(m));
             printf("\n\"@little-endian\" or \"@big-endian\"\n");
             fclose(patch_file);
             return -3;
@@ -125,7 +128,7 @@ int parsePatchText(PatchList* pchlist) {
         do {
             switch(line[0]){
             case '#':
-                printf("\n%s\n", line);
+                printf(CONSOLE_ESC(33;1m) "\n%s\n" CONSOLE_ESC(m), line);
                 continue;
             case '/':
                 strcpy(last_comment, line);
@@ -136,7 +139,8 @@ int parsePatchText(PatchList* pchlist) {
                 case 'e':
                 case 'E':
                     enabled = true;
-                    printf("Patch read: %s", last_comment);
+                    printf(CONSOLE_ESC(36m) "Patch read: %s" CONSOLE_ESC(m),
+                        last_comment);
                     break;
                 case 'f':
                 case 'F':
@@ -154,8 +158,8 @@ int parsePatchText(PatchList* pchlist) {
                         strcpysize(flag_val_buf, &line[6+flag_name_len+1],
                             strcspn(&line[6+flag_name_len+1], " /\n"));
                         offset_shift = (int)strtol(flag_val_buf, NULL, 0);
-                        printf("Flag: %s 0x%X\n", 
-                            flag_name_buf, offset_shift);
+                        printf(CONSOLE_ESC(34;1m) "Flag: %s 0x%X\n"
+                            CONSOLE_ESC(m), flag_name_buf, offset_shift);
                     }
                     break;
                 case 's':
@@ -198,7 +202,8 @@ int patchTarget(const PatchList* pchlist) {
     if(strlen(pchlist->nsobid) == 0) {
         mode = PATCH_MODE_ELF2NSO;
         if(strlen(pchlist->target.tid_str) == 0) {
-            printf("Failed to find output target.");
+            printf(CONSOLE_ESC(31m) "Failed to find output target."
+                CONSOLE_ESC(m));
             return -2;
         }
 
@@ -210,7 +215,8 @@ int patchTarget(const PatchList* pchlist) {
         strcat(elf_dir, ".elf");
         out_file_buf = ReadEntireFile(elf_dir, &out_file_buf_size);
         if (out_file_buf == NULL) {
-            printf("Failed to open %s, ", elf_dir);
+            printf(CONSOLE_ESC(31m) "Failed to open %s, " CONSOLE_ESC(m),
+                elf_dir);
             return -1;
         }
         printDone();
@@ -225,7 +231,7 @@ int patchTarget(const PatchList* pchlist) {
 
     PatchListNode* node = pchlist->first;
     for(int i = 0; node != NULL; i++) {
-        printf("%08X: ", node->patch.offset);
+        printf(CONSOLE_ESC(36m) "%08X: ", node->patch.offset);
 
         if(mode == PATCH_MODE_ELF2NSO) {
             printf("%08X ->", *(u32*)&out_file_buf[node->patch.offset]);
@@ -244,7 +250,7 @@ int patchTarget(const PatchList* pchlist) {
             u32 value_BE = node->patch.value;
             *(u32*)&out_file_buf[cur_block_offset + 6] = value_BE;
         }
-        printf("%08X\n", node->patch.value);
+        printf("%08X\n" CONSOLE_ESC(m), node->patch.value);
         
         node = node->next;
     }
@@ -263,7 +269,7 @@ int patchTarget(const PatchList* pchlist) {
         ret = elf2nso(out_file_buf, out_file_buf_size, out);
         printDone();
 
-        printf("\nNSO output to %s\n", out_file_path);
+        printf("\nNSO output to\n%s\n", out_file_path);
         
     } else {
         memcpy(out_file_buf+out_file_buf_size-IPS_FOOT_LEN,
@@ -283,7 +289,7 @@ int patchTarget(const PatchList* pchlist) {
         if(ret == 1) ret = 0;
         printDone();
 
-        printf("\nIPS output to %s\n", out_file_path);
+        printf("\nIPS output to\n%s\n", out_file_path);
     }
 
     fclose(out);
