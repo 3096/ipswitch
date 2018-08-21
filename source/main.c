@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 
     printf("Welcome to IPSwitch. Do no evil.\n\n");
 
-    titleSelect();
+    mainMenu();
 
     gfxExit();
     return 0;

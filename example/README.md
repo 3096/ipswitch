@@ -4,11 +4,11 @@ This program reads `.pchtxt` (patch text) files and can create `.ips` patches or
 
 The program looks for `.pchtxt` files from directory `sdmc:/switch/ipswitch/{titleid-title_description}/`. "title_description" is optional but it is used for display and help user to identify the title.
 
-For generating ips patch, name your patch text as `sdmc:/switch/ipswitch/{titleid-title_description}/ips-{nso_name}.pchtxt`. NSO build id is required in the file (see "Structure of `.pchtxt` File" section.)
+For generating ips patch, name your patch text as `sdmc:/switch/ipswitch/{patch_description}/{whatever_name}.pchtxt`. NSO build id is required in the file (see "Structure of `.pchtxt` File" section.) The {patch_description} folder name is used as the folder name in `atmosphere/exefs_patches/{patch_description}`.
 
 For generating patched nso from elf, place your elf file in `sdmc:/switch/ipswitch/{titleid-title_description}/{nso_name}.elf`. {nso_name} mush match the file name of the nso inside exefs. The `.pchtxt` should be `sdmc:/switch/ipswitch/{titleid-title_description}/{nso_name}.pchtxt`. 
 
-Run the homebrew and it will let you select a `.pchtxt` and generate either a `.ips` patch to `sdmc:/atmosphere/exefs_patches/{titleid}/{nsoid}.ips` or a patched nso to `sdmc:/atmosphere/titles/{titleid}/exefs/{nso_name}`.
+Run the homebrew and it will let you select a `.pchtxt` and generate either a `.ips` patch to `sdmc:/atmosphere/exefs_patches/{patch_description}/{nsoid}.ips` or a patched nso to `sdmc:/atmosphere/titles/{titleid}/exefs/{nso_name}`. Which to generate is determined by if an "nso build id" is specified, see below.
 
 ---
 ## Structure of `.pchtxt` File
@@ -19,7 +19,7 @@ Run the homebrew and it will let you select a `.pchtxt` and generate either a `.
 The first line is mandatory to specify the value's Endianess with character `@`. It should either be `@little-endian` or `@big-endian`.
 
 ---
-The second line is mandatory to specify the nso's build id with `@nsobid-{a_buncha_hex}`. If this is missing, the program will attempt to treat the file as an elf to nso patch.
+For generating `.ips` patch, the second line is mandatory to specify the nso's build id with `@nsobid-{a_buncha_hex}`. If this is missing, the program will attempt to treat the file as an elf to nso patch.
 
 ---
 ### Patches

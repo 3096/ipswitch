@@ -13,6 +13,8 @@
 
 #define IPSWITCH_DIR "/switch/ipswitch/"
 
-void titleSelect();
+void mainMenu();
+
+u64 patchTextSelect();
 
 #endif

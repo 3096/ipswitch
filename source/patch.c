@@ -1,9 +1,9 @@
 #include "patch.h"
 
-void getPatchTextPath(const PatchTextTarget* p_target, char* path) {
-    strcpy(path, p_target->patch_txt_dir);
-    strcat(path, p_target->nso_name);
-    strcat(path, PATCH_TEXT_FORMAT);
+void getPatchTextName(char* name, const char* path) {
+    size_t start_idx = strrchr(path, '/') - path + 1;
+    size_t end_idx = strrchr(path, '.') - path;
+    strcpysize(name, &path[start_idx], end_idx-start_idx);
 }
 
 int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian) {
@@ -70,12 +70,10 @@ int parsePatchText(PatchList* pchlist) {
     printf("\nReading patch text file:\n");
 
     FILE * patch_file;
-    char patch_txt_path[0x100];
-    getPatchTextPath(&pchlist->target, patch_txt_path);
-    patch_file = fopen(patch_txt_path, "r");
+    patch_file = fopen(pchlist->target.patch_txt_path, "r");
     if (patch_file == NULL) {
         fclose(patch_file);
-        printf("Cannot open %s, ", patch_txt_path);
+        printf("Cannot open %s, ", pchlist->target.patch_txt_path);
         return -2;
     }
 
@@ -102,12 +100,7 @@ int parsePatchText(PatchList* pchlist) {
     }
     pchlist->nsobid[64] = '\0';
     if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
-        // line 2 nso build id, nso_name doubles as pchtxt file name here
-        char first_three[4];
-        strcpysize(first_three, pchlist->target.nso_name, 3);
-        strToLowerCase(first_three);
-        if( strcmp(first_three, "ips") == 0 && 
-            (*(u64*)line == NSOBID_MAGIC_LOWER
+        if( (*(u64*)line == NSOBID_MAGIC_LOWER
             || *(u64*)line == NSOBID_MAGIC_UPPER) &&
             strlen(line) > 8 ) {
             // parse nso build id
@@ -204,10 +197,16 @@ int patchTarget(const PatchList* pchlist) {
     const size_t IPS_FOOT_LEN = strlen(IPS32_FOOT_MAGIC);
     if(strlen(pchlist->nsobid) == 0) {
         mode = PATCH_MODE_ELF2NSO;
+        if(strlen(pchlist->target.tid_str) == 0) {
+            printf("Failed to find output target.");
+            return -2;
+        }
+
         printInProgress("\nReading elf");
         char elf_dir[0x100];
-        strcpy(elf_dir, pchlist->target.patch_txt_dir);
-        strcat(elf_dir, pchlist->target.nso_name);
+        strcpysize(elf_dir, pchlist->target.patch_txt_path,
+            strlen(pchlist->target.patch_txt_path)
+            - strlen(PATCH_TEXT_FORMAT));
         strcat(elf_dir, ".elf");
         out_file_buf = ReadEntireFile(elf_dir, &out_file_buf_size);
         if (out_file_buf == NULL) {
@@ -257,7 +256,7 @@ int patchTarget(const PatchList* pchlist) {
         mkdir(out_file_path, 0700);
         strcat(out_file_path, "/exefs/");
         mkdir(out_file_path, 0700);
-        strcat(out_file_path, pchlist->target.nso_name);
+        strcat(out_file_path, pchlist->target.name);
 
         printInProgress("\nCompressing into nso");
         out = fopen(out_file_path, "wb");
@@ -272,7 +271,7 @@ int patchTarget(const PatchList* pchlist) {
 
         strcpy(out_file_path, ATMOS_EXEPCH_DIR);
         mkdir(out_file_path, 0700);
-        strcat(out_file_path, pchlist->target.tid_str);
+        strcat(out_file_path, pchlist->target.folder_name);
         mkdir(out_file_path, 0700);
         strcat(out_file_path, "/");
         strcat(out_file_path, pchlist->nsobid);

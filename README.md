@@ -24,7 +24,5 @@ See example
 
 ---
 ## TODO
-- Improve selection interface
-- Support selecting `.pchtxt` files
 - Toggle an edit enable or disable
 - Manage any existing `.ips` files, like a true `.ips` patch manager

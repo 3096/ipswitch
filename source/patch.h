@@ -31,17 +31,12 @@ typedef enum {
 
 typedef struct {
 	char tid_str[17];
-    char elf_dir[0x100];
-    char patch_dir[0x100];
-} PatchTarget;
-
-typedef struct {
-	char tid_str[17];
-    char patch_txt_dir[0x100];
-    char nso_name[0x100];
+    char patch_txt_path[0x100];
+    char name[0x100]; // used as nso name
+    char folder_name[0x100];
 } PatchTextTarget;
 
-void getPatchTextPath(const PatchTextTarget* target, char* path);
+void getPatchTextName(char* name, const char* path);
 
 typedef struct {
     u32 offset;
