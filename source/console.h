@@ -9,6 +9,11 @@
 
 #include "util.h"
 
+#define TOGGLE_ENABLED			0x6500 // "\0e"
+#define TOGGLE_DISABLED 		0x6400 // "\0d"
+#define TOGGLE_ENABLED_CHANGED	0x4500 // "\0E"
+#define TOGGLE_DISABLED_CHANGED	0x4400 // "\0D"
+
 u64 selectFromList(int* selection, StrList* str_list);
 
 bool userConfirm(const char* msg);

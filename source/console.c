@@ -1,5 +1,33 @@
 #include "console.h"
 
+u16 getStringTailU16(char* str) {
+    return *(u16*)&str[0xFE];
+}
+
+void setStringTailU16(char* str, u16 val) {
+    *(u16*)&str[0xFE] = val;
+}
+
+void catColoredStrByTail(char* out, char* in) {
+    u16 str_tail = getStringTailU16(in);
+    switch(str_tail) {
+    case TOGGLE_ENABLED_CHANGED:
+        setStringTailU16(in, TOGGLE_ENABLED);
+    case TOGGLE_ENABLED:
+        strcat(out, CONSOLE_ESC(32m));
+        strcat(out, in);
+        break;
+    case TOGGLE_DISABLED_CHANGED:
+        setStringTailU16(in, TOGGLE_DISABLED);
+    case TOGGLE_DISABLED:
+        strcat(out, CONSOLE_ESC(31m));
+        strcat(out, in);
+        break;
+    default:
+        strcat(out, in);
+    }
+}
+
 void selectIndex(int* selection, StrList* str_list, int change) {
     int selection_priv = *selection;
     *selection += change;
@@ -24,14 +52,18 @@ void selectIndex(int* selection, StrList* str_list, int change) {
 
     bool page_changed = 
         *selection/menu_page_size != selection_priv/menu_page_size;
+    u16 cur_str_tail = getStringTailU16(str_list->str_list[*selection]);
+    bool toggle_changed =
+        cur_str_tail == TOGGLE_ENABLED_CHANGED || 
+        cur_str_tail == TOGGLE_DISABLED_CHANGED;
 
     // assume first print is always change == 0, and otherwise re-print
-    if(change != 0 && !page_changed) {
+    if((change != 0 && !page_changed) || toggle_changed) {
         size_t move_up = menu_page_size - selection_priv % menu_page_size + 1;
         for(int i = 0; i < move_up; i++)
             strcat(menu_buffer, CONSOLE_ESC(1A));
         strcat(menu_buffer, "\r");
-        strcat(menu_buffer, str_list->str_list[selection_priv]);
+        catColoredStrByTail(menu_buffer, str_list->str_list[selection_priv]);
         for(int i = 0; i < move_up; i++)
             strcat(menu_buffer, CONSOLE_ESC(1B));
 
@@ -39,7 +71,7 @@ void selectIndex(int* selection, StrList* str_list, int change) {
         for(int i = 0; i < move_up; i++)
             strcat(menu_buffer, CONSOLE_ESC(1A));
         strcat(menu_buffer, "\r" CONSOLE_ESC(7m));
-        strcat(menu_buffer, str_list->str_list[*selection]);
+        catColoredStrByTail(menu_buffer, str_list->str_list[*selection]);
         strcat(menu_buffer, CONSOLE_ESC(0m));
         for(int i = 0; i < move_up; i++)
             strcat(menu_buffer, CONSOLE_ESC(1B));
@@ -63,18 +95,18 @@ void selectIndex(int* selection, StrList* str_list, int change) {
         }
 
         for(int i = menu_start; i < *selection; i++) {
-            strcat(menu_buffer, str_list->str_list[i]);
+            catColoredStrByTail(menu_buffer, str_list->str_list[i]);
             strcat(menu_buffer, "\n");
         }
 
         strcat(menu_buffer, CONSOLE_ESC(7m));
-        strcat(menu_buffer, str_list->str_list[*selection]);
+        catColoredStrByTail(menu_buffer, str_list->str_list[*selection]);
         strcat(menu_buffer, CONSOLE_ESC(0m));
         strcat(menu_buffer, "\n");
 
         for(int i = *selection+1; i < menu_end; i++) {
             if(i < str_list->size)
-                strcat(menu_buffer, str_list->str_list[i]);
+                catColoredStrByTail(menu_buffer, str_list->str_list[i]);
             strcat(menu_buffer, "\n");
         }
         if(menu_end < str_list->size) {
@@ -111,6 +143,20 @@ u64 selectFromList(int* selection, StrList* str_list) {
             selectIndex(selection, str_list, -5);
         else if (kDown & KEY_RIGHT)
             selectIndex(selection, str_list, 5);
+        else if (kDown & KEY_A) {
+            char* cur_str = str_list->str_list[*selection];
+            u16 str_tail = getStringTailU16(cur_str);
+            if(str_tail == TOGGLE_ENABLED) {
+                setStringTailU16(cur_str, TOGGLE_DISABLED_CHANGED);
+                selectIndex(selection, str_list, 0);
+            } else if (str_tail == TOGGLE_DISABLED) {
+                setStringTailU16(cur_str, TOGGLE_ENABLED_CHANGED);
+                selectIndex(selection, str_list, 0);
+            } else {
+                printf("\n");
+                return kDown;
+            }
+        }
         else if(kDown > kDownPrevious) {
             printf("\n");
             return kDown;

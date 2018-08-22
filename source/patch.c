@@ -147,14 +147,14 @@ int parsePatchText(PatchList* pchlist) {
                     if(strlen(line) < 7)
                         break;
                     size_t flag_name_len = strcspn(&line[6], " /\n");
-                    char flag_name_buf[0x100];
+                    char flag_name_buf[0x100] = { 0 };
                     strcpysize(flag_name_buf, &line[6], flag_name_len);
                     strToLowerCase(flag_name_buf);
 
                     if(strcmp(flag_name_buf, OFFSET_SHIFT_FLAG) == 0) {
                         if(strlen(line) < 20)
                             break;
-                        char flag_val_buf[0x100];
+                        char flag_val_buf[0x100] = { 0 };
                         strcpysize(flag_val_buf, &line[6+flag_name_len+1],
                             strcspn(&line[6+flag_name_len+1], " /\n"));
                         offset_shift = (int)strtol(flag_val_buf, NULL, 0);
@@ -208,7 +208,7 @@ int patchTarget(const PatchList* pchlist) {
         }
 
         printInProgress("\nReading elf");
-        char elf_dir[0x100];
+        char elf_dir[0x100] = { 0 };
         strcpysize(elf_dir, pchlist->target.patch_txt_path,
             strlen(pchlist->target.patch_txt_path)
             - strlen(PATCH_TEXT_FORMAT));
@@ -234,7 +234,7 @@ int patchTarget(const PatchList* pchlist) {
         printf(CONSOLE_ESC(36m) "%08X: ", node->patch.offset);
 
         if(mode == PATCH_MODE_ELF2NSO) {
-            printf("%08X ->", *(u32*)&out_file_buf[node->patch.offset]);
+            printf("%08X -> ", *(u32*)&out_file_buf[node->patch.offset]);
             *(u32*)&out_file_buf[node->patch.offset] = node->patch.value;
         } else {
             size_t cur_block_offset = 
@@ -255,7 +255,7 @@ int patchTarget(const PatchList* pchlist) {
         node = node->next;
     }
 
-    char out_file_path[0x100]; FILE* out;
+    char out_file_path[0x100] = { 0 }; FILE* out;
     if(mode == PATCH_MODE_ELF2NSO) {
         strcpy(out_file_path, ATMOS_TITLE_DIR);
         strcat(out_file_path, pchlist->target.tid_str);
