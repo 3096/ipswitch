@@ -20,6 +20,7 @@ typedef struct {
 
 StrList* getStrList();
 void addToStrList(StrList* list_ptr, const char* str);
+void addBytesToStrList(StrList* list_ptr, const char* bytes);
 void freeStrList(StrList* list_ptr);
 
 int isValidHexStr(const char* str);

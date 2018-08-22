@@ -11,9 +11,20 @@ StrList* getStrList() {
 void addToStrList(StrList* list_ptr, const char* str) {
     if ( list_ptr->size >= list_ptr->size_max ){
         list_ptr->size_max = list_ptr->size + 4;
-        list_ptr->str_list = realloc(list_ptr->str_list, list_ptr->size_max * sizeof(String));
+        list_ptr->str_list = realloc(list_ptr->str_list,
+            list_ptr->size_max * sizeof(String));
     }
     strcpy((char*)&list_ptr->str_list[list_ptr->size], str);
+    list_ptr->size++;
+}
+
+void addBytesToStrList(StrList* list_ptr, const char* bytes) {
+    if ( list_ptr->size >= list_ptr->size_max ){
+        list_ptr->size_max = list_ptr->size + 4;
+        list_ptr->str_list = realloc(list_ptr->str_list,
+            list_ptr->size_max * sizeof(String));
+    }
+    memcpy((char*)&list_ptr->str_list[list_ptr->size], bytes, sizeof(String));
     list_ptr->size++;
 }
 

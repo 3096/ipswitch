@@ -14,6 +14,8 @@
 #define TOGGLE_ENABLED_CHANGED	0x4500 // "\0E"
 #define TOGGLE_DISABLED_CHANGED	0x4400 // "\0D"
 
+u16 getStringTailU16(char* str);
+
 u64 selectFromList(int* selection, StrList* str_list);
 
 bool userConfirm(const char* msg);

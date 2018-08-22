@@ -11,11 +11,14 @@
 
 #define PATCH_TEXT_FORMAT ".pchtxt"
 
-#define ATMOS_TITLE_DIR "/atmosphere/titles/"
+#define ATMOS_TITLE_DIR	 "/atmosphere/titles/"
 #define ATMOS_EXEPCH_DIR "/atmosphere/exefs_patches/"
 
 #define NSOBID_MAGIC_LOWER 0x2D6469626F736E40 // "@nsobid-"
 #define NSOBID_MAGIC_UPPER 0x2D4449424F534E40 // "@NSOBID-"
+
+#define ENABLED_FLAG	"@enabled\n"
+#define DISABLED_FLAG	"@disabled\n"
 
 #define OFFSET_SHIFT_FLAG "offset_shift"
 
@@ -63,5 +66,10 @@ int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian);
 int parsePatchText(PatchList* pchlist);
 
 int patchTarget(const PatchList* pchlist);
+
+int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target,
+    StrList* pchtxt, StrList* patch_str_list);
+int writePchtxtFromStrList(PatchTextTarget* pchtxt_target,
+    StrList* pchtxt, StrList* patch_str_list);
 
 #endif

@@ -69,10 +69,10 @@ void freePatchList(PatchList* pchlist) {
 int parsePatchText(PatchList* pchlist) {
     printf("\nReading patch text file:\n");
 
-    FILE * patch_file;
-    patch_file = fopen(pchlist->target.patch_txt_path, "r");
-    if (patch_file == NULL) {
-        fclose(patch_file);
+    FILE * pchtxt_file;
+    pchtxt_file = fopen(pchlist->target.patch_txt_path, "r");
+    if (pchtxt_file == NULL) {
+        fclose(pchtxt_file);
         printf(CONSOLE_ESC(31m) "Cannot open %s, " CONSOLE_ESC(m),
             pchlist->target.patch_txt_path);
         return -2;
@@ -88,13 +88,13 @@ int parsePatchText(PatchList* pchlist) {
 
     // line 1 Endianness 
     bool isLittleEndian = true;
-    if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
+    if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL) {
         if(line[0] != '@') {
             printf(CONSOLE_ESC(31m)
                 "Error: Please specify Endianess in the first line using"
                 CONSOLE_ESC(m));
             printf("\n\"@little-endian\" or \"@big-endian\"\n");
-            fclose(patch_file);
+            fclose(pchtxt_file);
             return -3;
         } else {
             if(line[1] == 'b' || line[1] == 'B')
@@ -102,7 +102,7 @@ int parsePatchText(PatchList* pchlist) {
         }
     }
     pchlist->nsobid[64] = '\0';
-    if(fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL) {
+    if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL) {
         if( (*(u64*)line == NSOBID_MAGIC_LOWER
             || *(u64*)line == NSOBID_MAGIC_UPPER) &&
             strlen(line) > 8 ) {
@@ -118,7 +118,7 @@ int parsePatchText(PatchList* pchlist) {
                 }
             }
 
-            if(fgets(line, LINE_MAX_SIZE-1, patch_file) == NULL) {
+            if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) == NULL) {
                 goto stop;
             }
         }
@@ -183,10 +183,10 @@ int parsePatchText(PatchList* pchlist) {
                 patch.offset += offset_shift;
                 addPatchToList(pchlist, patch);
             }
-        } while (fgets(line, LINE_MAX_SIZE-1, patch_file) != NULL);
+        } while (fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL);
     }
 stop:
-    fclose(patch_file);
+    fclose(pchtxt_file);
     return 0;
 }
 
@@ -296,4 +296,94 @@ int patchTarget(const PatchList* pchlist) {
     free(out_file_buf);
 
     return ret;
+}
+
+int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target,
+    StrList* pchtxt, StrList* patch_str_list) {
+    FILE * pchtxt_file;
+    pchtxt_file = fopen(pchtxt_target->patch_txt_path, "r");
+    if (pchtxt_file == NULL) {
+        fclose(pchtxt_file);
+        printf(CONSOLE_ESC(31m) "Cannot open %s, " CONSOLE_ESC(m),
+            pchtxt_target->patch_txt_path);
+        return -1;
+    }
+
+    // line buffers
+    const size_t LINE_MAX_SIZE = 0x100;
+    char line[LINE_MAX_SIZE];
+    char last_comment[LINE_MAX_SIZE];
+
+    bool stopped = false;
+    u32 line_idx = 0;
+    while (fgets(line, LINE_MAX_SIZE-7, pchtxt_file) != NULL) {
+        if(!stopped) {
+            switch(line[0]){
+            case '/':
+                strcpy(last_comment, line);
+            case '@':
+                switch(line[1]) {
+                case 's':
+                case 'S':
+                    stopped = true;
+                    break;
+                case 'e':
+                case 'E':
+                    *strchr(last_comment, '\n') = '\0';
+                    last_comment[0xF9] = '\0';
+                    *(u32*)&last_comment[0xFA] = line_idx;
+                    *(u16*)&last_comment[0xFE] = TOGGLE_ENABLED;
+                    addBytesToStrList(patch_str_list, last_comment);
+                    break;
+                case 'd':
+                case 'D':
+                    *strchr(last_comment, '\n') = '\0';
+                    last_comment[0xF9] = '\0';
+                    *(u32*)&last_comment[0xFA] = line_idx;
+                    *(u16*)&last_comment[0xFE] = TOGGLE_DISABLED;
+                    addBytesToStrList(patch_str_list, last_comment);
+                    break;
+                }
+            }
+        }
+        addToStrList(pchtxt, line);
+        line_idx++;
+    }
+
+    fclose(pchtxt_file);
+    return 0;
+}
+
+int writePchtxtFromStrList(PatchTextTarget* pchtxt_target,
+    StrList* pchtxt, StrList* patch_str_list) {
+    FILE * pchtxt_file;
+    pchtxt_file = fopen(pchtxt_target->patch_txt_path, "wb");
+    if (pchtxt_file == NULL) {
+        fclose(pchtxt_file);
+        printf(CONSOLE_ESC(31m) "Cannot open %s, " CONSOLE_ESC(m),
+            pchtxt_target->patch_txt_path);
+        return -1;
+    }
+
+    for (int i = 0; i < patch_str_list->size; i++) {
+        u32 flag_idx = *(u32*)&patch_str_list->str_list[i][0xFA];
+        switch(getStringTailU16(patch_str_list->str_list[i])) {
+        case TOGGLE_ENABLED:
+        case TOGGLE_ENABLED_CHANGED:
+            strcpy(pchtxt->str_list[flag_idx], ENABLED_FLAG);
+            break;
+        case TOGGLE_DISABLED:
+        case TOGGLE_DISABLED_CHANGED:
+            strcpy(pchtxt->str_list[flag_idx], DISABLED_FLAG);
+            break;
+        }
+    }
+
+    for (int i = 0; i < pchtxt->size; i++) {
+        fputs(pchtxt->str_list[i], pchtxt_file);
+    }
+
+    fclose(pchtxt_file);
+
+    return 0;
 }
