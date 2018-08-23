@@ -35,7 +35,7 @@ void mainMenu() {
 }
 
 u64 patchTextSelect(PatchTextTarget* pchtxt_target) {
-    printf("Reading contents from %s\n", IPSWITCH_DIR);
+    printf("\nReading contents from %s\n", IPSWITCH_DIR);
 
     StrList* pchtxt_list = getStrList();
 
@@ -137,20 +137,9 @@ u64 patchTextToIPSMenu() {
             break;
 
         if (kDown & KEY_A) {
-            Result rc = 0;
-            PatchList* pchlist = initPatchList();
-            pchlist->target = pchtxt_target;
+            int rc = 0;
 
-            rc = parsePatchText(pchlist);
-            if(!R_SUCCEEDED(rc)) {
-                printf(CONSOLE_ESC(31m)
-                    "\nParsing failed: %d\n" CONSOLE_ESC(m), rc);
-                continue;
-            }
-            
-            rc = patchTarget(pchlist);
-
-            free(pchlist);
+            rc = patchTextToIPS(&pchtxt_target);
 
             if(R_SUCCEEDED(rc))
                 printf(CONSOLE_ESC(32m) "\nAll Done\n" CONSOLE_ESC(m));
@@ -167,46 +156,54 @@ u64 patchTextToggleMenu() {
     PatchTextTarget pchtxt_target;
     kDown = patchTextSelect(&pchtxt_target);
 
+    if (kDown & KEY_A) {
 
-    while(appletMainLoop()) {
-        if (kDown & KEY_PLUS || kDown & KEY_B)
-            break;
+        printf(CONSOLE_ESC(1m) 
+            "Press: A to Toggle a Patch            | B to Save and Go Back\n"
+            "       X to Abort and Discard Changes | "
+            "Y to Save and Apply Changes to IPS\n"
+            CONSOLE_ESC(0;32m) "\n\nGreen = Enabled "
+            CONSOLE_ESC(31m) "Red = Disabled\n" CONSOLE_ESC(m));
 
-        if (kDown & KEY_A) {
-            printf(CONSOLE_ESC(1m) 
-                "Press: A to Toggle a Patch | B to Go Back | PLUS(+) to quit:"
-                CONSOLE_ESC(0;32m) "\n\nGreen = Enabled "
-                CONSOLE_ESC(31m) "Red = Disabled\n" CONSOLE_ESC(m));
+        StrList* pchtxt = getStrList();
+        StrList* patch_str_list = getStrList();
 
-            StrList* pchtxt = getStrList();
-            StrList* patch_str_list = getStrList();
+        Result rc = 0;
+        rc = readPchtxtIntoStrList(&pchtxt_target, pchtxt, patch_str_list);
+        if(!R_SUCCEEDED(rc)) {
+            printf(CONSOLE_ESC(31m)
+                "\nFailed to read patch text: %d\n" CONSOLE_ESC(m), rc);
+            goto end;
+        }
+        
+        int selection = 0; // dummy here
+        kDown = selectFromList(&selection, patch_str_list);
 
-            Result rc = 0;
-            rc = readPchtxtIntoStrList(&pchtxt_target, pchtxt, patch_str_list);
-            if(!R_SUCCEEDED(rc)) {
-                printf(CONSOLE_ESC(31m)
-                    "\nFailed to read patch text: %d\n" CONSOLE_ESC(m), rc);
-                break;
-            }
-            
-            int selection = 0; // dummy here
-            kDown = selectFromList(&selection, patch_str_list);
-
+        if (kDown & KEY_B || kDown & KEY_Y) {
             rc = writePchtxtFromStrList(&pchtxt_target,
                 pchtxt, patch_str_list);
 
             if(R_SUCCEEDED(rc)) {
-                printf(CONSOLE_ESC(32m) "Changes applied. " CONSOLE_ESC(m)
-                    "Please re-generate the IPS file.\n");
-            } else
+                printf(CONSOLE_ESC(32m) "Changes applied.\n" CONSOLE_ESC(m));
+            } else {
                 printf(CONSOLE_ESC(31m) "\nFailed: %d\n" CONSOLE_ESC(m), rc);
+                goto end;
+            }
 
-            freeStrList(pchtxt);
-            freeStrList(patch_str_list);
+            if(kDown & KEY_Y) {
+                rc = patchTextToIPS(&pchtxt_target);
+
+                if(R_SUCCEEDED(rc))
+                    printf(CONSOLE_ESC(32m) "\nAll Done\n" CONSOLE_ESC(m));
+                else
+                    printf(CONSOLE_ESC(31m) "\nFailed: %d\n" CONSOLE_ESC(m), rc);
+            }
         } else {
-            break;
+            printf(CONSOLE_ESC(33m) "Changes discarded.\n" CONSOLE_ESC(m));
         }
-
+    end:
+        freeStrList(pchtxt);
+        freeStrList(patch_str_list);
     }
     return kDown;
 }

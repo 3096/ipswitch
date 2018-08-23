@@ -9,6 +9,9 @@ void setStringTailU16(char* str, u16 val) {
 }
 
 void catColoredStrByTail(char* out, char* in) {
+    if(strlen(in) >= CONSOLE_WIDTH) {
+        strcpy(&in[CONSOLE_WIDTH-4], EXCEED_SYMBOL);
+    }
     u16 str_tail = getStringTailU16(in);
     switch(str_tail) {
     case TOGGLE_ENABLED_CHANGED:
@@ -26,6 +29,7 @@ void catColoredStrByTail(char* out, char* in) {
     default:
         strcat(out, in);
     }
+    strcat(out, CONSOLE_ESC(m));
 }
 
 void selectIndex(int* selection, StrList* str_list, int change) {

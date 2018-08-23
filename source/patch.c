@@ -297,6 +297,20 @@ int patchTarget(const PatchList* pchlist) {
 
     return ret;
 }
+int patchTextToIPS(PatchTextTarget* pchtxt_target) {
+    int rc = 0;
+            
+    PatchList* pchlist = initPatchList();
+    pchlist->target = *pchtxt_target;
+    rc = parsePatchText(pchlist);
+    if(!R_SUCCEEDED(rc)) {
+        return rc;
+    }
+    rc = patchTarget(pchlist);
+    free(pchlist);
+
+    return rc;
+}
 
 int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target,
     StrList* pchtxt, StrList* patch_str_list) {

@@ -9,6 +9,10 @@
 
 #include "util.h"
 
+#define CONSOLE_WIDTH 80
+
+#define EXCEED_SYMBOL "..."
+
 #define TOGGLE_ENABLED			0x6500 // "\0e"
 #define TOGGLE_DISABLED 		0x6400 // "\0d"
 #define TOGGLE_ENABLED_CHANGED	0x4500 // "\0E"

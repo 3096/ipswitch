@@ -61,11 +61,11 @@ PatchList* initPatchList();
 int addPatchToList(PatchList* pchlist, Patch patch);
 void freePatchList(PatchList* pchlist);
 
-int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian);
-
 int parsePatchText(PatchList* pchlist);
 
 int patchTarget(const PatchList* pchlist);
+
+int patchTextToIPS(PatchTextTarget* pchtxt_target);
 
 int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target,
     StrList* pchtxt, StrList* patch_str_list);
