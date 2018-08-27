@@ -106,12 +106,13 @@ u64 patchTextSelect(PatchTextTarget* pchtxt_target) {
         }
 
         if (kDown & KEY_A) {
-            // tid_str
-            strcpy(pchtxt_target->tid_str, tid_str);
             // patch_txt_path
             strcpy(pchtxt_target->patch_txt_path, IPSWITCH_DIR);
             strcat(pchtxt_target->patch_txt_path,
                 pchtxt_list->str_list[selection]);
+            // tid_str
+            strcpysize(pchtxt_target->tid_str,
+                pchtxt_list->str_list[selection], 16);
             // name
             getPatchTextName(pchtxt_target->name,
                 pchtxt_target->patch_txt_path);

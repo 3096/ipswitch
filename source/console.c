@@ -205,3 +205,9 @@ void printInProgress(const char * msg) {
 void printDone() {
     printf(CONSOLE_ESC(32m) "Done\n" CONSOLE_ESC(m));
 }
+
+void printBytesAsHex(const u8* bytes, size_t size) {
+    for(size_t i = 0; i < size; i++) {
+        printf("%02X", bytes[i]);
+    }
+}

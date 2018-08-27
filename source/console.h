@@ -27,4 +27,6 @@ bool userConfirm(const char* msg);
 void printInProgress(const char* msg);
 void printDone();
 
+void printBytesAsHex(const u8* bytes, size_t size);
+
 #endif

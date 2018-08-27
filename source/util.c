@@ -87,3 +87,39 @@ int strEndianSwap(char* str) {
     free(buffer);
     return 0;
 }
+
+int escapeString(char* str, size_t* new_len) {
+    char* cur_char = str;
+    char* head_char = str;
+    *new_len = 0;
+
+    while(*head_char) {
+        if(*head_char == '\\') {
+            head_char++;
+            
+            switch(*head_char) {
+            case 'a': *cur_char = '\a'; break;
+            case 'b': *cur_char = '\b'; break;
+            case 'f': *cur_char = '\f'; break;
+            case 'n': *cur_char = '\n'; break;
+            case 'r': *cur_char = '\r'; break;
+            case 't': *cur_char = '\t'; break;
+            case 'v': *cur_char = '\v'; break;
+            case '\\': *cur_char = '\\'; break;
+            case '\'': *cur_char = '\''; break;
+            case '\"': *cur_char = '\"'; break;
+            case '\?': *cur_char = '\?'; break;
+            case '\e': *cur_char = '\e'; break;
+            default: *cur_char = '\0'; return -1;
+            }
+        } else {
+            *cur_char = *head_char;
+        }
+        head_char++;
+        cur_char++;
+        (*new_len)++;
+    }
+    
+    *cur_char = '\0';
+    return 0;
+}

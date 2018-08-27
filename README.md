@@ -1,5 +1,6 @@
-# IPSwitch
-Use text files to generate `.ips` patches or patched `nso` to use with Atmosphere.
+![IPSwitch](https://raw.githubusercontent.com/3096/ipswitch/master/icon.png)
+# Pronounced as "IPS-witch".
+Use text to generate `.ips` patches to use with Atmosphere.
 
 ### To use `.ips` patches make sure you have Atmosphere 44e2412a (July 30, 2018) or later loader build.
 
@@ -7,7 +8,10 @@ See example for details.
 
 ---
 ## Credit
-- plutoo for making elf2nso, used in compressing patched elf to nso
+- plutoo for making elf2nso, used in compressing patched elf to nso (ISC License)
+- Violet Inkling for the app icon art
+- OatmealDome for help in testings and feature suggestions
+- All of my preview testers on SPH/SMH
 
 ---
 ## Build

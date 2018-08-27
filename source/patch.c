@@ -6,23 +6,48 @@ void getPatchTextName(char* name, const char* path) {
     strcpysize(name, &path[start_idx], end_idx-start_idx);
 }
 
-int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian) {
-    char offset_str[9];
-    offset_str[8] = '\0';
-    char value_str[9];
-    value_str[8] = '\0';
-
+int getPatchFromLine(char* line, Patch* patch) {
+    char offset_str[9]; offset_str[8] = '\0';
     memcpy(offset_str, line, 8);
-    memcpy(value_str, &line[9], 8);
-    if(!isValidHexStr(offset_str) || !isValidHexStr(value_str))
+    if(!isValidHexStr(offset_str))
         return -1;
-
-    if(isLittleEndian) {
-        strEndianSwap(value_str);
-    }
-
     patch->offset = (uint32_t)strtol(offset_str, NULL, 16);
-    patch->value = (uint32_t)strtol(value_str, NULL, 16);
+
+    char* value_str = &line[9];
+    if(value_str[0] == '\"') {
+        char* str_end = strrchr(&value_str[1], '\"');
+        if(str_end == NULL) {
+            return -4;
+        }
+        u16 value_len = str_end - value_str;
+        memcpy(patch->value, &value_str[1], value_len-1);
+        patch->value[value_len-1] = '\0';
+
+        size_t value_len_after_escape = 0;
+        if(escapeString((char*)patch->value, &value_len_after_escape) != 0) {
+            return -5;
+        }
+        patch->len = (u16)value_len_after_escape + 1;
+        patch->type = PATCH_TYPE_STRING;
+    } else {
+        u16 value_str_len = strcspn(&line[9], LINE_IGNORE_CHARS);
+        if(value_str_len % 2 != 0) {
+            return -3;
+        }
+        
+        value_str[value_str_len] = '\0';
+        if(!isValidHexStr(value_str)) {
+            return -2;
+        }
+
+        for(u16 i = 0; i < value_str_len/2; i++) {
+            char byte_str_buff[3] = { 0 };
+            memcpy(byte_str_buff, &value_str[i*2], 2);
+            patch->value[i] = (u8)strtol(byte_str_buff, NULL, 16);
+        }
+        patch->len = value_str_len/2;
+        patch->type = PATCH_TYPE_BYTE;
+    }
 
     return 0;
 }
@@ -30,6 +55,7 @@ int getPatchFromLine(char* line, Patch* patch, bool isLittleEndian) {
 PatchList* initPatchList() {
     PatchList* pchlist = malloc(sizeof(PatchList));
     pchlist->size = 0;
+    pchlist->total_value_len = 0;
     pchlist->first = NULL;
     pchlist->head = NULL;
     pchlist->nsobid[0] = '\0';
@@ -53,6 +79,7 @@ int addPatchToList(PatchList* pchlist, Patch patch) {
         pchlist->head = new_node;
     }
     pchlist->size++;
+    pchlist->total_value_len += patch.len;
 
     return 0;
 }
@@ -86,104 +113,104 @@ int parsePatchText(PatchList* pchlist) {
     char line[LINE_MAX_SIZE]; line[LINE_MAX_SIZE] = '\0';
     char last_comment[LINE_MAX_SIZE]; last_comment[LINE_MAX_SIZE] = '\0';
 
-    // line 1 Endianness 
-    bool isLittleEndian = true;
-    if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL) {
-        if(line[0] != '@') {
-            printf(CONSOLE_ESC(31m)
-                "Error: Please specify Endianess in the first line using"
-                CONSOLE_ESC(m));
-            printf("\n\"@little-endian\" or \"@big-endian\"\n");
-            fclose(pchtxt_file);
-            return -3;
-        } else {
-            if(line[1] == 'b' || line[1] == 'B')
-                isLittleEndian = false;
-        }
-    }
-    pchlist->nsobid[64] = '\0';
-    if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL) {
-        if( (*(u64*)line == NSOBID_MAGIC_LOWER
-            || *(u64*)line == NSOBID_MAGIC_UPPER) &&
-            strlen(line) > 8 ) {
-            // parse nso build id
-            for (int i = 0; i < 64; i++) {
-                char buf[2]; buf[1] = '\0';
-                buf[0] = line[i+8];
-                if(isValidHexStr(buf)) {
-                    pchlist->nsobid[i] = buf[0];
-                } else {
-                    pchlist->nsobid[i] = '\0';
-                    break;
-                }
-            }
+    // get line
+    if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) == NULL)
+        goto stop;
 
+    // check for old patch texts with endian specification
+    // cuz it's no longer in use as Big-Endian is no longer supported. 
+    if(line[0] == '@') {
+        switch(line[1]) {
+        case 'b':
+        case 'B':
+            printf(CONSOLE_ESC(33m)
+                "Big-Endian is no longer supported. "
+                "Proceeding as little-endian\n"
+                CONSOLE_ESC(m));
+        case 'l':
+        case 'L':
             if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) == NULL) {
                 goto stop;
             }
         }
+    }
 
-        // parsing body
-        bool enabled = false;
-        do {
-            switch(line[0]){
-            case '#':
-                printf(CONSOLE_ESC(33;1m) "\n%s\n" CONSOLE_ESC(m), line);
-                continue;
-            case '/':
-                strcpy(last_comment, line);
-                continue;
-            case '@':
-
-                switch(line[1]) {
-                case 'e':
-                case 'E':
-                    enabled = true;
-                    printf(CONSOLE_ESC(36m) "Patch read: %s" CONSOLE_ESC(m),
-                        last_comment);
-                    break;
-                case 'f':
-                case 'F':
-                    if(strlen(line) < 7)
-                        break;
-                    size_t flag_name_len = strcspn(&line[6], " /\n");
-                    char flag_name_buf[0x100] = { 0 };
-                    strcpysize(flag_name_buf, &line[6], flag_name_len);
-                    strToLowerCase(flag_name_buf);
-
-                    if(strcmp(flag_name_buf, OFFSET_SHIFT_FLAG) == 0) {
-                        if(strlen(line) < 20)
-                            break;
-                        char flag_val_buf[0x100] = { 0 };
-                        strcpysize(flag_val_buf, &line[6+flag_name_len+1],
-                            strcspn(&line[6+flag_name_len+1], " /\n"));
-                        offset_shift = (int)strtol(flag_val_buf, NULL, 0);
-                        printf(CONSOLE_ESC(34;1m) "Flag: %s 0x%X\n"
-                            CONSOLE_ESC(m), flag_name_buf, offset_shift);
-                    }
-                    break;
-                case 's':
-                case 'S':
-                    goto stop; // parsing reached "@stop"
-                default:
-                    enabled = false;
-                }
-                continue;
-            default:
-                if(!enabled)
-                    continue;
-                if(strlen(line) < 17)
-                    continue;
-
-                Patch patch; int ret = 0;
-                ret = getPatchFromLine(line, &patch, isLittleEndian);
-                if(ret != 0)
-                    continue;
-
-                patch.offset += offset_shift;
-                addPatchToList(pchlist, patch);
+    pchlist->nsobid[64] = '\0';
+    if( (*(u64*)line == NSOBID_MAGIC_LOWER
+        || *(u64*)line == NSOBID_MAGIC_UPPER) && strlen(line) > 8 ) {
+        // parse nso build id
+        for (int i = 0; i < 64; i++) {
+            char buf[2]; buf[1] = '\0';
+            buf[0] = line[i+8];
+            if(isValidHexStr(buf)) {
+                pchlist->nsobid[i] = buf[0];
+            } else {
+                pchlist->nsobid[i] = '\0';
+                break;
             }
-        } while (fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL);
+        }
+    }
+
+    // parsing body
+    bool enabled = false;
+    while (fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL) {
+        switch(line[0]){
+        case '#':
+            printf(CONSOLE_ESC(33;1m) "\n%s\n" CONSOLE_ESC(m), line);
+            continue;
+        case '/':
+            strcpy(last_comment, line);
+            continue;
+        case '@':
+
+            switch(line[1]) {
+            case 'e':
+            case 'E':
+                enabled = true;
+                printf(CONSOLE_ESC(36m) "Patch read: %s" CONSOLE_ESC(m),
+                    last_comment);
+                break;
+            case 'f':
+            case 'F':
+                if(strlen(line) < 7)
+                    break;
+                size_t flag_name_len = strcspn(&line[6], LINE_IGNORE_CHARS);
+                char flag_name_buf[0x100] = { 0 };
+                strcpysize(flag_name_buf, &line[6], flag_name_len);
+                strToLowerCase(flag_name_buf);
+
+                if(strcmp(flag_name_buf, OFFSET_SHIFT_FLAG) == 0) {
+                    if(strlen(line) < 20)
+                        break;
+                    char flag_val_buf[0x100] = { 0 };
+                    strcpysize(flag_val_buf, &line[6+flag_name_len+1],
+                        strcspn(&line[6+flag_name_len+1], LINE_IGNORE_CHARS));
+                    offset_shift = (int)strtol(flag_val_buf, NULL, 0);
+                    printf(CONSOLE_ESC(34;1m) "Flag: %s 0x%X\n"
+                        CONSOLE_ESC(m), flag_name_buf, offset_shift);
+                }
+                break;
+            case 's':
+            case 'S':
+                goto stop; // parsing reached "@stop"
+            default:
+                enabled = false;
+            }
+            continue;
+        default:
+            if(!enabled)
+                continue;
+            if(strlen(line) < PATCH_LINE_MIN_SIZE)
+                continue;
+
+            Patch patch = {}; int ret = 0;
+            ret = getPatchFromLine(line, &patch);
+            if(ret != 0)
+                continue;
+
+            patch.offset += offset_shift;
+            addPatchToList(pchlist, patch);
+        }
     }
 stop:
     fclose(pchtxt_file);
@@ -221,8 +248,8 @@ int patchTarget(const PatchList* pchlist) {
         }
         printDone();
     } else {
-        out_file_buf_size = IPS_HEAD_LEN
-            + IPS32_4BYTE_PATCHBLOCK_SIZE * pchlist->size + IPS_FOOT_LEN;
+        out_file_buf_size = IPS_HEAD_LEN + pchlist->total_value_len
+            + IPS32_OFFSET_AND_LEN_SIZE * pchlist->size + IPS_FOOT_LEN;
         out_file_buf = malloc(out_file_buf_size);
         memcpy(out_file_buf, IPS32_HEAD_MAGIC, IPS_HEAD_LEN);
     }
@@ -230,28 +257,43 @@ int patchTarget(const PatchList* pchlist) {
     printf("\nApplying patches:\n\n");
 
     PatchListNode* node = pchlist->first;
+    size_t cur_ips_buf_offset = IPS_HEAD_LEN;
     for(int i = 0; node != NULL; i++) {
         printf(CONSOLE_ESC(36m) "%08X: ", node->patch.offset);
 
         if(mode == PATCH_MODE_ELF2NSO) {
-            printf("%08X -> ", *(u32*)&out_file_buf[node->patch.offset]);
-            *(u32*)&out_file_buf[node->patch.offset] = node->patch.value;
+            if(node->patch.type == PATCH_TYPE_BYTE) {
+                printBytesAsHex(&out_file_buf[node->patch.offset],
+                    node->patch.len);
+            } else {
+                printf((char*)&out_file_buf[node->patch.offset]);
+            }
+            printf(" -> ");
+            memcpy(&out_file_buf[node->patch.offset],
+                node->patch.value, node->patch.len);
         } else {
-            size_t cur_block_offset = 
-                IPS_HEAD_LEN + IPS32_4BYTE_PATCHBLOCK_SIZE * i;
-
             u32 offset_BE = node->patch.offset;
             bytesEndianSwap((u8*)&offset_BE, sizeof(offset_BE));
-            *(u32*)&out_file_buf[cur_block_offset] = offset_BE;
+            *(u32*)&out_file_buf[cur_ips_buf_offset] = offset_BE;
+            cur_ips_buf_offset += sizeof(offset_BE);
 
-            u16 len_BE = 0x400; // as 4 in big endian
-            *(u32*)&out_file_buf[cur_block_offset + 4] = len_BE;
+            u16 len_BE = node->patch.len;
+            bytesEndianSwap((u8*)&len_BE, sizeof(len_BE));
+            *(u16*)&out_file_buf[cur_ips_buf_offset] = len_BE;
+            cur_ips_buf_offset += sizeof(len_BE);
 
-            u32 value_BE = node->patch.value;
-            *(u32*)&out_file_buf[cur_block_offset + 6] = value_BE;
+            memcpy(&out_file_buf[cur_ips_buf_offset], node->patch.value,
+                node->patch.len);
+            cur_ips_buf_offset += node->patch.len;
         }
-        printf("%08X\n" CONSOLE_ESC(m), node->patch.value);
+
+        if(node->patch.type == PATCH_TYPE_BYTE) {
+            printBytesAsHex(node->patch.value, node->patch.len);
+        } else {
+            printf((char*)node->patch.value);
+        }
         
+        printf(CONSOLE_ESC(m) "\n");
         node = node->next;
     }
 

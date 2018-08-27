@@ -1,10 +1,15 @@
-@little-endian
-#01003BC0000A0000 Splatoon 2 3.1.0 USA
+// This file can be used for elf patching on main.elf
+#Splatoon 2 3.1.0 USA
+
+// ELF has a 0x100 long header
+@flag offset_shift 0x788 // <- This flag auto adds 0x788 to all offsets in the text
 
 // Set money to 6969699
 @enabled
-0019794C 400DA052
-00197950 602C8B72
+0019784C 400DA052 0016F3C8
+00197850 602C8B72
+
+@flag offset_shift 0 // <- You can flag offset_shift back to 0 if you want
 
 // Set sea snail to 696
 @enabled
@@ -14,7 +19,6 @@
 //----------------------------------------------------------------------------
 // Not Used/Deprecated
 
-@nsobid-F1D66E4030912F7641E84AB1B61F3F76
 #01003BC0000A0000 Splatoon™ 2 3.0.1 USA
 
 // Set money to 6969699

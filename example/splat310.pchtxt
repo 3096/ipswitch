@@ -1,6 +1,5 @@
-@little-endian
-@nsobid-034C8FA7A63B7A87F96F408B2AEFFF6C // <- this is for ips pchtxt file
-#01003BC0000A0000 Splatoon 2 3.1.0 USA
+@nsobid-034C8FA7A63B7A87F96F408B2AEFFF6C // <- this is for ips name
+#Splatoon 2 3.1.0 USA
 
 // NSO has a 0x100 long header, which is not part of the binary offset
 @flag offset_shift 0x100 // <- This flag auto adds 0x100 to all offsets in the text

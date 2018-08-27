@@ -35,6 +35,8 @@ int strEndianSwap(char* str);
 
 int strToLowerCase(char* str);
 
+int escapeString(char* str, size_t* new_len);
+
 // Copy up to given size len or reaches '\0'
 int strcpysize(char* dest, const char* src, size_t size);
 
