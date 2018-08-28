@@ -24,13 +24,15 @@ The value can be either bytes or a string.
 
 When using bytes, each byte must be represented in 2 characters in their hexadecimal representable, and multiple bytes should be arranged in the order they appear in the binary (Little Endian in most cases). 
 
-When using Strings, each string must open and close with a pair of `"`.
+When using Strings, each string must open and close with a pair of `"`. C style string escapes are also supported. So a string value can be something like `"New\nLine"`.
 
 For every patch, it is necessary to specify whether it is enabled or disabled by putting `@enabled` or `@disabled` flag on top of it. When encountering this flag, the program will print the last "pure comment line" from the file, in attempt to explain the patch. Thus, it's also necessary to put a comment before each patch about what the patch does.
 
 Comments are marked with `/` character:
 
 ```// This is a comment.```
+
+Be mindful that IPSwitch uses a 0x100 sized line buffer when parsing patch text. While this shouldn't be an issue in most cases, having a line over 255 characters will not work.
 
 To sum it up, this is what a patch should look like:
 
@@ -49,14 +51,27 @@ Offset   Some Value or String
 ### Flags
 `@flag` can be used to add flags in the patch text. This is what the line should look like:
 
+`@flag {flag_name}` 
+
+Or for flags with an value:
+
 `@flag {flag_name} {flag_value}`
 
-For now, the only supported flag name is "offset_shift", which allows you to add or substract a certain amount to all patch text offsets. For example, if you want to use offset directly from IDA, you can do
+For now, the supported flags are
+
+---
+`offset_shift`: allows you to add or substract a certain amount to all patch text offsets that comes after this flag. For example, if you want to use .text addresses, you can do
 
 ```@flag offset_shift 0x100```
 
 Which will automatically add 0x100 to all offsets, since the raw offset from IDA doesn't include the 0x100 nso header.
 
+---
+`print_values`: to enabled printing applied values of all patches
+
+```@flag print_values```
+
+---
 See `splat310.pchtxt` to find out how you can use the flag in it.
 
 ---
@@ -77,7 +92,9 @@ In fact, IPSwitch will attempt to treat any patch text without a specified `@nso
 
 For generating patched nso from elf, place your elf file in `sdmc:/switch/ipswitch/{titleid-title_description}/{nso_name}.elf`. {nso_name} mush match the file name of the nso inside exefs. The `.pchtxt` should be `sdmc:/switch/ipswitch/{titleid-title_description}/{nso_name}.pchtxt`.
 
-See "main.pchtxt" as an example.
+Be careful when using the "offset_shift" flag when using this, as the converted elf file has different offset shifts in different segments.
+
+See `main.pchtxt` as an example.
 
 ---
 ### Editing the Text File

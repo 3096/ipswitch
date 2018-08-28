@@ -20,7 +20,7 @@ Make sure you have:
 - libnx
 - [lz4](https://github.com/lz4/lz4) compiled with DevkitA64
 
-The simply run: `make`
+Then simply run: `make`
 
 ---
 ## How to use
@@ -28,5 +28,5 @@ See example
 
 ---
 ## TODO
-- Toggle an edit enable or disable
 - Manage any existing `.ips` files, like a true `.ips` patch manager
+- `.ips` to patch text

@@ -26,6 +26,7 @@
 #define DISABLED_FLAG   "@disabled\n"
 
 #define OFFSET_SHIFT_FLAG "offset_shift"
+#define PRINT_VALUE_FLAG "print_values"
 
 #define IPS32_HEAD_MAGIC "IPS32"
 #define IPS32_FOOT_MAGIC "EEOF"
@@ -68,6 +69,7 @@ typedef struct {
     PatchListNode* head;
     PatchTextTarget target;
     char nsobid[65];
+    bool printing_values;
 } PatchList;
 
 PatchList* initPatchList();

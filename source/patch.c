@@ -59,6 +59,7 @@ PatchList* initPatchList() {
     pchlist->first = NULL;
     pchlist->head = NULL;
     pchlist->nsobid[0] = '\0';
+    pchlist->printing_values = false;
     return pchlist;
 }
 
@@ -149,11 +150,14 @@ int parsePatchText(PatchList* pchlist) {
                 break;
             }
         }
+        if(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) == NULL) {
+            goto stop;
+        }
     }
 
     // parsing body
     bool enabled = false;
-    while (fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL) {
+    do {
         switch(line[0]){
         case '#':
             printf(CONSOLE_ESC(33;1m) "\n%s\n" CONSOLE_ESC(m), line);
@@ -179,16 +183,27 @@ int parsePatchText(PatchList* pchlist) {
                 strcpysize(flag_name_buf, &line[6], flag_name_len);
                 strToLowerCase(flag_name_buf);
 
-                if(strcmp(flag_name_buf, OFFSET_SHIFT_FLAG) == 0) {
-                    if(strlen(line) < 20)
+                // flags with no need for a value goes here
+                if (strcmp(flag_name_buf, PRINT_VALUE_FLAG) == 0) {
+                    pchlist->printing_values = true;
+                    printf("Printing applied values");
+                    break;
+                } else {
+                    if(strlen(line) < strlen(flag_name_buf) + 8)
                         break;
                     char flag_val_buf[0x100] = { 0 };
                     strcpysize(flag_val_buf, &line[6+flag_name_len+1],
                         strcspn(&line[6+flag_name_len+1], LINE_IGNORE_CHARS));
-                    offset_shift = (int)strtol(flag_val_buf, NULL, 0);
-                    printf(CONSOLE_ESC(34;1m) "Flag: %s 0x%X\n"
-                        CONSOLE_ESC(m), flag_name_buf, offset_shift);
+                    printf(CONSOLE_ESC(34;1m) "Flag: %s ", flag_name_buf);
+
+                    // flags with need for a value goes here
+                    if(strcmp(flag_name_buf, OFFSET_SHIFT_FLAG) == 0) {
+                        offset_shift = (int)strtol(flag_val_buf, NULL, 0);
+                        printf("0x%X", offset_shift);
+                    }                    
                 }
+                printf(CONSOLE_ESC(m) "\n");
+                
                 break;
             case 's':
             case 'S':
@@ -211,7 +226,7 @@ int parsePatchText(PatchList* pchlist) {
             patch.offset += offset_shift;
             addPatchToList(pchlist, patch);
         }
-    }
+    } while(fgets(line, LINE_MAX_SIZE-1, pchtxt_file) != NULL);
 stop:
     fclose(pchtxt_file);
     return 0;
@@ -254,21 +269,27 @@ int patchTarget(const PatchList* pchlist) {
         memcpy(out_file_buf, IPS32_HEAD_MAGIC, IPS_HEAD_LEN);
     }
 
-    printf("\nApplying patches:\n\n");
+    if(pchlist->printing_values)
+        printf("\nApplying patches:\n\n");
+    else
+        printInProgress("\nApplying patches");
 
     PatchListNode* node = pchlist->first;
     size_t cur_ips_buf_offset = IPS_HEAD_LEN;
     for(int i = 0; node != NULL; i++) {
-        printf(CONSOLE_ESC(36m) "%08X: ", node->patch.offset);
+        if(pchlist->printing_values)
+            printf(CONSOLE_ESC(36m) "%08X: ", node->patch.offset);
 
         if(mode == PATCH_MODE_ELF2NSO) {
-            if(node->patch.type == PATCH_TYPE_BYTE) {
-                printBytesAsHex(&out_file_buf[node->patch.offset],
-                    node->patch.len);
-            } else {
-                printf((char*)&out_file_buf[node->patch.offset]);
+            if(pchlist->printing_values) {
+                if(node->patch.type == PATCH_TYPE_BYTE) {
+                    printBytesAsHex(&out_file_buf[node->patch.offset],
+                        node->patch.len);
+                } else {
+                    printf((char*)&out_file_buf[node->patch.offset]);
+                }
+                printf(" -> ");
             }
-            printf(" -> ");
             memcpy(&out_file_buf[node->patch.offset],
                 node->patch.value, node->patch.len);
         } else {
@@ -287,15 +308,21 @@ int patchTarget(const PatchList* pchlist) {
             cur_ips_buf_offset += node->patch.len;
         }
 
-        if(node->patch.type == PATCH_TYPE_BYTE) {
-            printBytesAsHex(node->patch.value, node->patch.len);
-        } else {
-            printf((char*)node->patch.value);
+        if(pchlist->printing_values) {
+            if(node->patch.type == PATCH_TYPE_BYTE) {
+                printBytesAsHex(node->patch.value, node->patch.len);
+            } else {
+                printf((char*)node->patch.value);
+            }
+
+            printf(CONSOLE_ESC(m) "\n");
         }
         
-        printf(CONSOLE_ESC(m) "\n");
         node = node->next;
     }
+
+    if(!pchlist->printing_values)
+        printDone();
 
     char out_file_path[0x100] = { 0 }; FILE* out;
     if(mode == PATCH_MODE_ELF2NSO) {

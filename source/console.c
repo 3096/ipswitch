@@ -44,7 +44,7 @@ void selectIndex(int* selection, StrList* str_list, int change) {
         *selection %= str_list->size;
     }
 
-    const size_t MENU_PAGE_SIZE_MAX = 10;
+    const size_t MENU_PAGE_SIZE_MAX = 20;
     char menu_buffer[0x1000]; menu_buffer[0] = '\0';
 
     size_t menu_page_size;
