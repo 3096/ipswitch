@@ -15,6 +15,9 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef ELF2NSO_H
+#define ELF2NSO_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,9 +25,6 @@
 #include <lz4.h>
 #include "sha256.h"
 #include "elf64.h"
-
-#ifndef ELF2NSO_H
-#define ELF2NSO_H
 
 typedef uint64_t u64;
 typedef uint32_t u32;

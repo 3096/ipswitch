@@ -67,7 +67,7 @@ For now, the supported flags are
 Which will automatically add 0x100 to all offsets, since the raw offset from IDA doesn't include the 0x100 nso header.
 
 ---
-`print_values`: to enabled printing applied values of all patches
+`print_values`: to enable printing applied values of all patches
 
 ```@flag print_values```
 

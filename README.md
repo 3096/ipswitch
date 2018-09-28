@@ -9,7 +9,7 @@ See example for details.
 ---
 ## Credit
 - plutoo for making elf2nso, used in compressing patched elf to nso (ISC License)
-- Violet Inkling for the app icon art
+- [Violet Inkling](https://www.deviantart.com/violetinkling) for the app icon art *(with permission)*
 - OatmealDome for help in testings and feature suggestions
 - All of my preview testers on SPH/SMH
 
@@ -24,7 +24,9 @@ Then simply run: `make`
 
 ---
 ## How to use
-See example
+See [example](example)
+
+For further assistance, please join our [Discord server](https://discord.gg/v8Rueaf)
 
 ---
 ## TODO

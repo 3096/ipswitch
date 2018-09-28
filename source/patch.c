@@ -181,26 +181,27 @@ int parsePatchText(PatchList* pchlist) {
                 size_t flag_name_len = strcspn(&line[6], LINE_IGNORE_CHARS);
                 char flag_name_buf[0x100] = { 0 };
                 strcpysize(flag_name_buf, &line[6], flag_name_len);
+                printf(CONSOLE_ESC(34;1m) "Flag: %s ", flag_name_buf);
                 strToLowerCase(flag_name_buf);
 
                 // flags with no need for a value goes here
                 if (strcmp(flag_name_buf, PRINT_VALUE_FLAG) == 0) {
                     pchlist->printing_values = true;
-                    printf("Printing applied values");
-                    break;
                 } else {
                     if(strlen(line) < strlen(flag_name_buf) + 8)
-                        break;
+                        goto unknown_flag;
                     char flag_val_buf[0x100] = { 0 };
                     strcpysize(flag_val_buf, &line[6+flag_name_len+1],
                         strcspn(&line[6+flag_name_len+1], LINE_IGNORE_CHARS));
-                    printf(CONSOLE_ESC(34;1m) "Flag: %s ", flag_name_buf);
 
                     // flags with need for a value goes here
                     if(strcmp(flag_name_buf, OFFSET_SHIFT_FLAG) == 0) {
                         offset_shift = (int)strtol(flag_val_buf, NULL, 0);
                         printf("0x%X", offset_shift);
-                    }                    
+                    } else {
+                    unknown_flag:
+                        printf(CONSOLE_ESC(0;33m) "Unknown Flag");
+                    }
                 }
                 printf(CONSOLE_ESC(m) "\n");
                 
@@ -366,6 +367,7 @@ int patchTarget(const PatchList* pchlist) {
 
     return ret;
 }
+
 int patchTextToIPS(PatchTextTarget* pchtxt_target) {
     int rc = 0;
             
@@ -379,6 +381,19 @@ int patchTextToIPS(PatchTextTarget* pchtxt_target) {
     free(pchlist);
 
     return rc;
+}
+
+int addPatchCommentToToggleList(StrList* patch_str_list, char* comment,
+    u32 line_idx, u16 stringTail) {
+    char* new_line_char = strchr(comment, '\n');
+    if(new_line_char != NULL)
+        *new_line_char = '\0';
+    comment[0xF9] = '\0';
+    *(u32*)&comment[0xFA] = line_idx;
+    *(u16*)&comment[0xFE] = stringTail;
+    addBytesToStrList(patch_str_list, comment);
+    
+    return 0;
 }
 
 int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target,
@@ -412,19 +427,13 @@ int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target,
                     break;
                 case 'e':
                 case 'E':
-                    *strchr(last_comment, '\n') = '\0';
-                    last_comment[0xF9] = '\0';
-                    *(u32*)&last_comment[0xFA] = line_idx;
-                    *(u16*)&last_comment[0xFE] = TOGGLE_ENABLED;
-                    addBytesToStrList(patch_str_list, last_comment);
+                    addPatchCommentToToggleList(patch_str_list, last_comment,
+                        line_idx, TOGGLE_ENABLED);
                     break;
                 case 'd':
                 case 'D':
-                    *strchr(last_comment, '\n') = '\0';
-                    last_comment[0xF9] = '\0';
-                    *(u32*)&last_comment[0xFA] = line_idx;
-                    *(u16*)&last_comment[0xFE] = TOGGLE_DISABLED;
-                    addBytesToStrList(patch_str_list, last_comment);
+                    addPatchCommentToToggleList(patch_str_list, last_comment,
+                        line_idx, TOGGLE_DISABLED);
                     break;
                 }
             }
