@@ -1,10 +1,10 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <sys/stat.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #include <switch.h>
 
@@ -13,7 +13,7 @@
 typedef char String[0x100];
 
 typedef struct {
-	size_t size;
+    size_t size;
     size_t size_max;
     String* str_list;
 } StrList;

@@ -1,15 +1,15 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include <string.h>
-#include <stdio.h>
 #include <dirent.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <switch.h>
 
-#include "util.h"
 #include "console.h"
 #include "patch.h"
+#include "util.h"
 
 #define IPSWITCH_DIR "/switch/ipswitch/"
 

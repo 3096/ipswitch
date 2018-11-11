@@ -34,8 +34,8 @@ include $(DEVKITPRO)/libnx/switch_rules
 GITREV  := $(shell git rev-parse HEAD && rm -f $(notdir $(CURDIR)).nacp)
 
 VERSION_MAJOR := 0
-VERSION_MINOR := 1
-VERSION_MICRO := 1
+VERSION_MINOR := 2
+VERSION_MICRO := 0
 ifneq ($(GITREV),)
 VERSION_MICRO := $(VERSION_MICRO)-$(GITREV)
 endif

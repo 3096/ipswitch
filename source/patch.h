@@ -41,7 +41,7 @@ typedef enum {
 typedef struct {
     char tid_str[17];
     char patch_txt_path[0x100];
-    char name[0x100]; // used as nso name
+    char name[0x100];  // used as nso name
     char folder_name[0x100];
 } PatchTextTarget;
 
@@ -82,9 +82,9 @@ int patchTarget(const PatchList* pchlist);
 
 int patchTextToIPS(PatchTextTarget* pchtxt_target);
 
-int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target,
-    StrList* pchtxt, StrList* patch_str_list);
-int writePchtxtFromStrList(PatchTextTarget* pchtxt_target,
-    StrList* pchtxt, StrList* patch_str_list);
+int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target, StrList* pchtxt,
+                          StrList* patch_str_list);
+int writePchtxtFromStrList(PatchTextTarget* pchtxt_target, StrList* pchtxt,
+                           StrList* patch_str_list);
 
 #endif
