@@ -115,11 +115,10 @@ int parsePatchText(PatchList* pchlist) {
     int offset_shift = 0;
 
     // line buffers
-    const size_t LINE_MAX_SIZE = 0x100;
     char line[LINE_MAX_SIZE];
-    line[LINE_MAX_SIZE] = '\0';
+    line[LINE_MAX_SIZE - 1] = '\0';
     char last_comment[LINE_MAX_SIZE];
-    last_comment[LINE_MAX_SIZE] = '\0';
+    last_comment[LINE_MAX_SIZE - 1] = '\0';
 
     // get line
     if (fgets(line, LINE_MAX_SIZE - 1, pchtxt_file) == NULL) goto stop;
@@ -130,8 +129,7 @@ int parsePatchText(PatchList* pchlist) {
         switch (line[1]) {
             case 'b':
             case 'B':
-                printf(CONSOLE_ESC(
-                    33m) "Big-Endian is no longer supported. "
+                printf(CONSOLE_ESC(33m) "Big-Endian is no longer supported. "
                          "Proceeding as little-endian\n" CONSOLE_ESC(m));
             case 'l':
             case 'L':
@@ -167,7 +165,7 @@ int parsePatchText(PatchList* pchlist) {
     do {
         switch (line[0]) {
             case '#':
-                printf(CONSOLE_ESC(33; 1m) "\n%s\n" CONSOLE_ESC(m), line);
+                printf(CONSOLE_ESC(33;1m) "\n%s\n" CONSOLE_ESC(m), line);
                 continue;
             case '/':
                 strcpy(last_comment, line);
@@ -189,7 +187,7 @@ int parsePatchText(PatchList* pchlist) {
                             strcspn(&line[6], LINE_IGNORE_CHARS);
                         char flag_name_buf[0x100] = {0};
                         strcpysize(flag_name_buf, &line[6], flag_name_len);
-                        printf(CONSOLE_ESC(34; 1m) "Flag: %s ", flag_name_buf);
+                        printf(CONSOLE_ESC(34;1m) "Flag: %s ", flag_name_buf);
                         strToLowerCase(flag_name_buf);
 
                         // flags with no need for a value goes here
@@ -212,7 +210,7 @@ int parsePatchText(PatchList* pchlist) {
                                 printf("0x%X", offset_shift);
                             } else {
                             unknown_flag:
-                                printf(CONSOLE_ESC(0; 33m) "Unknown Flag");
+                                printf(CONSOLE_ESC(0;33m) "Unknown Flag");
                             }
                         }
                         printf(CONSOLE_ESC(m) "\n");
@@ -255,8 +253,8 @@ int patchTarget(const PatchList* pchlist) {
     if (strlen(pchlist->nsobid) == 0) {
         mode = PATCH_MODE_ELF2NSO;
         if (strlen(pchlist->target.tid_str) == 0) {
-            printf(CONSOLE_ESC(
-                31m) "Failed to find output target." CONSOLE_ESC(m));
+            printf(CONSOLE_ESC(31m)
+                "Failed to find output target." CONSOLE_ESC(m));
             return -2;
         }
 
@@ -391,6 +389,11 @@ int patchTextToIPS(PatchTextTarget* pchtxt_target) {
     rc = patchTarget(pchlist);
     free(pchlist);
 
+    // for elf fail and people just didn't put nsobid for ips
+    if(rc == -1 || rc == -2) {
+        printf("Did you forget to include nsobid?\n");
+    }
+
     return rc;
 }
 
@@ -418,9 +421,10 @@ int readPchtxtIntoStrList(PatchTextTarget* pchtxt_target, StrList* pchtxt,
     }
 
     // line buffers
-    const size_t LINE_MAX_SIZE = 0x100;
     char line[LINE_MAX_SIZE];
+    line[LINE_MAX_SIZE - 1] = '\0';
     char last_comment[LINE_MAX_SIZE];
+    last_comment[LINE_MAX_SIZE - 1] = '\0';
 
     bool stopped = false;
     u32 line_idx = 0;

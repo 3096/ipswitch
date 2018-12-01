@@ -32,7 +32,7 @@ Comments are marked with `/` character:
 
 ```// This is a comment.```
 
-Be mindful that IPSwitch uses a 0x100 sized line buffer when parsing patch text. While this shouldn't be an issue in most cases, having a line over 255 characters will not work.
+Be mindful that IPSwitch uses a 0x1000 sized line buffer when parsing patch text. While this shouldn't be an issue in most cases, having a line over 4096 characters will not work.
 
 To sum it up, this is what a patch should look like:
 

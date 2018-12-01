@@ -194,6 +194,10 @@ bool userConfirm(const char * msg) {
         }
 
         kDownPrevious = kDown;
+
+        gfxFlushBuffers();
+        gfxSwapBuffers();
+        gfxWaitForVsync();
     }
     return false;
 }

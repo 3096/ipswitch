@@ -5,12 +5,14 @@
 
 #include <switch.h>
 
+#include "config.h"
 #include "util.h"
 #include "console.h"
 #include "elf2nso.h"
 
 #define PATCH_TEXT_FORMAT ".pchtxt"
 
+#define ATMOS_DIR        "/atmosphere/"
 #define ATMOS_TITLE_DIR  "/atmosphere/titles/"
 #define ATMOS_EXEPCH_DIR "/atmosphere/exefs_patches/"
 
@@ -56,7 +58,7 @@ typedef struct {
     u32 offset;
     u16 len;
     PatchType type;
-    u8 value[0x100];
+    u8 value[LINE_MAX_SIZE];
 } Patch;
 typedef struct PatchListNode {
     Patch patch;

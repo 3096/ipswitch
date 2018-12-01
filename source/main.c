@@ -1,16 +1,18 @@
 #include <switch.h>
 
+#include "config.h"
 #include "menu.h"
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     gfxInitDefault();
     consoleInit(NULL);
 
-    printf(CONSOLE_ESC(35;1m) "Welcome to IPSwitch. Do no evil.\n\n"
-        CONSOLE_ESC(m));
+    if (checkRequirement() == 0) {
+        printf(CONSOLE_ESC(35;1m)
+            "Welcome to IPSwitch. Do no evil.\n\n" CONSOLE_ESC(m));
 
-    mainMenu();
+        mainMenu();
+    }
 
     gfxExit();
     return 0;
