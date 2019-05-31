@@ -118,24 +118,8 @@ int escapeString(char* str, size_t* new_len) {
                 case 'v':
                     *cur_char = '\v';
                     break;
-                case '\\':
-                    *cur_char = '\\';
-                    break;
-                case '\'':
-                    *cur_char = '\'';
-                    break;
-                case '\"':
-                    *cur_char = '\"';
-                    break;
-                case '\?':
-                    *cur_char = '\?';
-                    break;
-                case '\e':
-                    *cur_char = '\e';
-                    break;
                 default:
-                    *cur_char = '\0';
-                    return -1;
+                    *cur_char = *head_char;
             }
         } else {
             *cur_char = *head_char;
