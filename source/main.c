@@ -4,7 +4,6 @@
 #include "menu.h"
 
 int main(int argc, char **argv) {
-    gfxInitDefault();
     consoleInit(NULL);
 
     if (checkRequirement() == 0) {
@@ -14,6 +13,6 @@ int main(int argc, char **argv) {
         mainMenu();
     }
 
-    gfxExit();
+    consoleExit(NULL);
     return 0;
 }

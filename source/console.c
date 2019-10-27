@@ -166,10 +166,6 @@ u64 selectFromList(int* selection, StrList* str_list) {
             return kDown;
         }
         kDownPrevious = kDown;
-
-        gfxFlushBuffers();
-        gfxSwapBuffers();
-        gfxWaitForVsync();
     }
 
     return 0;
@@ -194,10 +190,6 @@ bool userConfirm(const char * msg) {
         }
 
         kDownPrevious = kDown;
-
-        gfxFlushBuffers();
-        gfxSwapBuffers();
-        gfxWaitForVsync();
     }
     return false;
 }
