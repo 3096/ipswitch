@@ -166,6 +166,7 @@ u64 selectFromList(int* selection, StrList* str_list) {
             return kDown;
         }
         kDownPrevious = kDown;
+        consoleUpdate(NULL);
     }
 
     return 0;
@@ -190,16 +191,19 @@ bool userConfirm(const char * msg) {
         }
 
         kDownPrevious = kDown;
+        consoleUpdate(NULL);
     }
     return false;
 }
 
 void printInProgress(const char * msg) {
     printf("%s... ", msg);
+    consoleUpdate(NULL);
 }
 
 void printDone() {
     printf(CONSOLE_ESC(32m) "Done\n" CONSOLE_ESC(m));
+    consoleUpdate(NULL);
 }
 
 void printBytesAsHex(const u8* bytes, size_t size) {

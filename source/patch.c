@@ -284,6 +284,8 @@ int patchTarget(const PatchList* pchlist) {
     else
         printInProgress("\nApplying patches");
 
+    consoleUpdate(NULL);
+
     PatchListNode* node = pchlist->first;
     size_t cur_ips_buf_offset = IPS_HEAD_LEN;
     for (int i = 0; node != NULL; i++) {
@@ -332,6 +334,7 @@ int patchTarget(const PatchList* pchlist) {
     }
 
     if (!pchlist->printing_values) printDone();
+    consoleUpdate(NULL);
 
     char out_file_path[0x100] = {0};
     FILE* out;
@@ -370,6 +373,7 @@ int patchTarget(const PatchList* pchlist) {
 
         printf("\nIPS output to\n%s\n", out_file_path);
     }
+    consoleUpdate(NULL);
 
     fclose(out);
     free(out_file_buf);
@@ -393,6 +397,7 @@ int patchTextToIPS(PatchTextTarget* pchtxt_target) {
     if(rc == -1 || rc == -2) {
         printf("Did you forget to include nsobid?\n");
     }
+    consoleUpdate(NULL);
 
     return rc;
 }
@@ -490,6 +495,7 @@ int writePchtxtFromStrList(PatchTextTarget* pchtxt_target, StrList* pchtxt,
     for (int i = 0; i < pchtxt->size; i++) {
         fputs(pchtxt->str_list[i], pchtxt_file);
     }
+    consoleUpdate(NULL);
 
     fclose(pchtxt_file);
 
