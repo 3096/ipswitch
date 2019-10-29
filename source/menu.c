@@ -29,6 +29,7 @@ void mainMenu() {
         }
 
         if (kDown & KEY_PLUS) break;
+        consoleUpdate(NULL);
     }
 
     freeStrList(main_menu_list);
@@ -124,6 +125,7 @@ u64 patchTextSelect(PatchTextTarget* pchtxt_target) {
             *strchr(pchtxt_target->folder_name, '/') = '\0';
             break;
         }
+        consoleUpdate(NULL);
     }
 
     freeStrList(pchtxt_list);
@@ -148,6 +150,7 @@ u64 patchTextToIPSMenu() {
             else
                 printf(CONSOLE_ESC(31m) "\nFailed: %d\n" CONSOLE_ESC(m), rc);
         }
+        consoleUpdate(NULL);
     }
     return kDown;
 }
@@ -164,6 +167,7 @@ u64 patchTextToggleMenu() {
             "Y to Save and Apply Changes to IPS\n"
             CONSOLE_ESC(0;32m) "\n\nGreen = Enabled "
             CONSOLE_ESC(31m) "Red = Disabled\n" CONSOLE_ESC(m));
+        consoleUpdate(NULL);
 
         StrList* pchtxt = getStrList();
         StrList* patch_str_list = getStrList();
