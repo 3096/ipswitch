@@ -42,3 +42,7 @@ release
 
 # Testing
 *.ips
+
+# VSCode
+.vscode
+vscode-preinclude.h
