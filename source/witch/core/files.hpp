@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -5,10 +6,12 @@ namespace witch {
 namespace core {
 namespace pchtxt {
 
-constexpr auto PCHTXT_DIR = "sdmc:/switch/ipswitch/";
+const auto PCHTXT_DIR = std::filesystem::path{"sdmc:/switch/ipswitch/"};
+const auto PCHTXT_DIR_LEN = std::string{PCHTXT_DIR}.size();
+const auto PCHTXT_EXTENSION = std::filesystem::path{".pchtxt"};
 
 struct Item {
-    std::string path;
+    std::filesystem::path path;
     std::string title;
     uint64_t program;
 };
