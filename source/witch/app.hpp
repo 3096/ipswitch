@@ -12,11 +12,11 @@ class Application {
         return s_instance;
     }
 
-    Aether::Display mDisplay;
+    Aether::Display m_Display;
 
    public:
     static void run();
-    static inline void exit() { getInstance().mDisplay.exit(); }
+    static inline void exit() { getInstance().m_Display.exit(); }
 };
 
 }  // namespace witch

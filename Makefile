@@ -53,7 +53,7 @@ APP_VERSION	:=	w${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/witch source/witch/ui
+SOURCES		:=	source source/witch source/witch/ui source/witch/core
 DATA		:=	data
 INCLUDES	:=	include
 #ROMFS	:=	romfs
@@ -68,7 +68,7 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 
-CXXFLAGS	:= $(CFLAGS) -std=c++17 -fno-rtti -fno-exceptions
+CXXFLAGS	:= $(CFLAGS) -std=c++17 -fno-rtti
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)

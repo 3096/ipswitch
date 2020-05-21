@@ -5,17 +5,20 @@
 namespace witch {
 
 Application::Application() {
-    mDisplay.setBackgroundColour(Aether::Theme::Dark.bg.r, Aether::Theme::Dark.bg.g, Aether::Theme::Dark.bg.b);
-    mDisplay.setHighlightAnimation(Aether::Theme::Dark.highlightFunc);
-    mDisplay.setHighlightColours(Aether::Theme::Dark.highlightBG, Aether::Theme::Dark.selected);
+    m_Display.setBackgroundColour(Aether::Theme::Dark.bg.r, Aether::Theme::Dark.bg.g, Aether::Theme::Dark.bg.b);
+    m_Display.setHighlightAnimation(Aether::Theme::Dark.highlightFunc);
+    m_Display.setHighlightColours(Aether::Theme::Dark.highlightBG, Aether::Theme::Dark.selected);
 
-    mDisplay.setScreen(&ui::MainScreen::getInstance());
+    m_Display.setScreen(&ui::MainScreen::getInstance());
 }
 
 Application::~Application() {}
 
 void Application::run() {
-    while (getInstance().mDisplay.loop()) {
+    try {
+        while (getInstance().m_Display.loop())
+            ;
+    } catch (const std::exception& e) {
     }
 }
 
