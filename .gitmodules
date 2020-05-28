@@ -1,3 +1,6 @@
 [submodule "libs/aether"]
 	path = libs/aether
 	url = git@github.com:3096/Aether.git
+[submodule "source/libpchtxt"]
+	path = source/libpchtxt
+	url = git@github.com:3096/libpchtxt.git
