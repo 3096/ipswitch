@@ -22,7 +22,7 @@ class MainScreen : public Aether::Screen {
     static constexpr auto SUB_TITLE_RAISE = 3;
     static constexpr auto SUB_TITLE_SIZE = 31;
 
-    static constexpr auto LIST_X = 90;
+    static constexpr auto LIST_X = 58;
     static constexpr auto LIST_Y = 160;
     static constexpr auto LIST_W = 720;
     static constexpr auto LIST_H = consts::SCREEN_H - LIST_Y - consts::CONTROL_BAR_H;

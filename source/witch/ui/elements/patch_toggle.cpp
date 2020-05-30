@@ -5,7 +5,10 @@ namespace ui {
 namespace elements {
 
 PatchToggle::PatchToggle(pchtxt::Patch& patch)
-    : Aether::ListOption(patch.name, getToggleStr(patch.enabled), getToggleCb()), m_patch(patch) {}
+    : Aether::ListOption(patch.name, getToggleStr(patch.enabled), getToggleCb()), m_patch(patch) {
+    updateColor();
+    // TODO: display author
+}
 
 PatchToggle::~PatchToggle() {}
 

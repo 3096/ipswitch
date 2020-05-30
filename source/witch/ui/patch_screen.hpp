@@ -21,13 +21,20 @@ class PatchScreen : public Aether::Screen {
     // styles
 
     // dementions
-    static constexpr auto LIST_X = 90;
-    static constexpr auto LIST_Y = 160;
+    static constexpr auto LIST_X = 58;
+    static constexpr auto LIST_Y = consts::HEADER_BAR_H;
     static constexpr auto LIST_W = 720;
     static constexpr auto LIST_H = consts::SCREEN_H - LIST_Y - consts::CONTROL_BAR_H;
 
+    static constexpr auto LOG_X = 800;
+    static constexpr auto LOG_Y = consts::HEADER_BAR_H;
+    static constexpr auto LOG_W = consts::SCREEN_W - LOG_X - 58;
+    static constexpr auto LOG_H = consts::SCREEN_H - consts::HEADER_BAR_H - consts::CONTROL_BAR_H;
+    static constexpr auto LOG_FONT_SIZE = 18;
+
     // // ui members
     Aether::List* mp_patchList;
+    Aether::TextBlock* mp_logTextBlock;
 
     // // members
     std::filesystem::path m_pchtxtPath;
