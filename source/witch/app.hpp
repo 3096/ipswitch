@@ -16,7 +16,8 @@ class Application {
 
    public:
     static void run();
-    static inline void exit() { getInstance().m_Display.exit(); }
+    static inline void setScreen(Aether::Screen& screen) { getInstance().m_Display.setScreen(&screen); }
+    static inline void exitApp() { getInstance().m_Display.exit(); }
 };
 
 }  // namespace witch

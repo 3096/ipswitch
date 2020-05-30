@@ -1,6 +1,7 @@
 #include "app.hpp"
 
 #include "ui/main_screen.hpp"
+#include "ui/patch_screen.hpp"
 
 namespace witch {
 
@@ -10,6 +11,7 @@ Application::Application() {
     m_Display.setHighlightColours(Aether::Theme::Dark.highlightBG, Aether::Theme::Dark.selected);
 
     m_Display.setScreen(&ui::MainScreen::getInstance());
+    ui::PatchScreen::init();  // do it at start so it doesn't affect load time later
 }
 
 Application::~Application() {}
@@ -20,6 +22,7 @@ void Application::run() {
             ;
     } catch (const std::exception& e) {
     }
+    getInstance().~Application();
 }
 
 }  // namespace witch

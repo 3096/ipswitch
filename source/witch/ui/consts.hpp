@@ -1,3 +1,5 @@
+#pragma once
+
 namespace consts {
 
 auto constexpr SCREEN_H = 720;

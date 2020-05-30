@@ -53,7 +53,7 @@ APP_VERSION	:=	w${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_MICRO}
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/witch source/witch/ui source/witch/core
+SOURCES		:=	source source/witch source/witch/ui source/witch/ui/elements source/witch/core source/libpchtxt
 DATA		:=	data
 INCLUDES	:=	include
 #ROMFS	:=	romfs

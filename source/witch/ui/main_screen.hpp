@@ -30,8 +30,8 @@ class MainScreen : public Aether::Screen {
     // members
     Aether::List* mp_pchtxtList;
 
-    // lifecycle
-    void onLoad() override;
+    // helpers
+    void refreshFileList();
 
    public:
     static inline auto& getInstance() {
