@@ -2,7 +2,8 @@
 #include <sstream>
 
 #include "../../libpchtxt/pchtxt.hpp"
-#include "Aether.hpp"
+#include "../core/files.hpp"
+#include "Aether/Aether.hpp"
 #include "consts.hpp"
 
 namespace witch {
@@ -32,23 +33,25 @@ class PatchScreen : public Aether::Screen {
     static constexpr auto LOG_H = consts::SCREEN_H - consts::HEADER_BAR_H - consts::CONTROL_BAR_H;
     static constexpr auto LOG_FONT_SIZE = 18;
 
-    // // ui members
+    // ui members
     Aether::List* mp_patchList;
-    Aether::TextBlock* mp_logTextBlock;
+    Aether::Scrollable* mp_logTextBlockWrap;
 
-    // // members
-    std::filesystem::path m_pchtxtPath;
+    // members
+    core::files::PchtxtItem m_curPchtxtItem;
     pchtxt::PatchTextOutput m_curPatchTextOutput;
-    std::stringstream m_parseLogSs;
 
     // lifecycle
     void onLoad() override;
+
+    // methods
+    void applyIps();
 
    public:
     static inline void init() {
         getInstance();  // construct the object, but don't return it. Done for load time purpose
     }
-    static void load(std::filesystem::path pchtxtPath);
+    static void load(core::files::PchtxtItem pchtxtItem);
 };
 
 }  // namespace ui

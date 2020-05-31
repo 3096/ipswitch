@@ -41,8 +41,8 @@ include $(DEVKITPRO)/libnx/switch_rules
 GITREV  := $(shell git rev-parse HEAD && rm -f $(notdir $(CURDIR)).nacp)
 
 VERSION_MAJOR := 0
-VERSION_MINOR := 2
-VERSION_MICRO := 1
+VERSION_MINOR := 3
+VERSION_MICRO := 0
 ifneq ($(GITREV),)
 VERSION_MICRO := $(VERSION_MICRO)-$(GITREV)
 endif
@@ -68,7 +68,7 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
 
-CXXFLAGS	:= $(CFLAGS) -std=c++17 -fno-rtti
+CXXFLAGS	:= $(CFLAGS) -std=c++20 -fno-rtti
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)

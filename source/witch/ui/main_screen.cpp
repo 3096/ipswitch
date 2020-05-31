@@ -37,10 +37,11 @@ MainScreen::~MainScreen() {}
 
 void MainScreen::refreshFileList() {
     mp_pchtxtList->removeAllElements();
-    for (auto& pchtxt : core::pchtxt::getItems()) {
+    for (auto& pchtxtItem : core::files::getItems()) {
         // TODO: better list element with title and program id displayed
-        mp_pchtxtList->addElement(new Aether::ListButton(std::string{pchtxt.path}.substr(core::pchtxt::PCHTXT_DIR_LEN),
-                                                         [pchtxt]() { PatchScreen::load(pchtxt.path); }));
+        mp_pchtxtList->addElement(
+            new Aether::ListButton(std::string{pchtxtItem.path}.substr(core::files::PCHTXT_DIR_LEN),
+                                   [pchtxtItem]() { PatchScreen::load(pchtxtItem); }));
     }
     // TODO: refresh cutie pics too
 }
