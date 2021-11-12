@@ -5,12 +5,13 @@
 
 namespace witch {
 
-Application::Application() {
-    m_Display.setBackgroundColour(Aether::Theme::Dark.bg.r, Aether::Theme::Dark.bg.g, Aether::Theme::Dark.bg.b);
-    m_Display.setHighlightAnimation(Aether::Theme::Dark.highlightFunc);
-    m_Display.setHighlightColours(Aether::Theme::Dark.highlightBG, Aether::Theme::Dark.selected);
+Application::Application() : m_window("IPSwitch", 1280, 720, [](const std::string message, const bool important) {}) {
+    m_window.setBackgroundColour(Aether::Theme::Dark.bg);
+    m_window.setHighlightAnimation(Aether::Theme::Dark.highlightFunc);
+    m_window.setHighlightBackground(Aether::Theme::Dark.highlightBG);
+    m_window.setHighlightOverlay(Aether::Theme::Dark.selected);
 
-    m_Display.setScreen(&ui::MainScreen::getInstance());
+    m_window.showScreen(&ui::MainScreen::getInstance());
     ui::PatchScreen::init();  // do it at start so it doesn't affect load time later
 }
 
@@ -18,11 +19,10 @@ Application::~Application() {}
 
 void Application::run() {
     try {
-        while (getInstance().m_Display.loop())
+        while (getInstance().m_window.loop())
             ;
     } catch (const std::exception& e) {
     }
-    getInstance().~Application();
 }
 
 }  // namespace witch

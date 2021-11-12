@@ -7,6 +7,8 @@
 namespace witch {
 namespace ui {
 
+const Aether::Colour MainScreen::SUB_TITLE_COLOR = {0xFF, 0x71, 0xE7, 0xFF};
+
 MainScreen::MainScreen() {
     auto* titleText = new Aether::Text(TITLE_X, TITLE_Y, "IPSwitch", TITLE_SIZE);
     titleText->setColour(Aether::Theme::Dark.text);
@@ -21,13 +23,13 @@ MainScreen::MainScreen() {
     mp_pchtxtList = new Aether::List(LIST_X, LIST_Y, LIST_W, LIST_H);
     addElement(mp_pchtxtList);
 
-    auto* controls = new Aether::Controls();
-    controls->addItem(new Aether::ControlItem(Aether::Button::A, "OK"));
-    controls->addItem(new Aether::ControlItem(Aether::Button::X, "Refresh"));
+    auto* controlBar = new Aether::ControlBar();
+    controlBar->addControl(Aether::Button::A, "OK");
+    controlBar->addControl(Aether::Button::X, "Refresh");
     onButtonPress(Aether::Button::X, [this]() { this->refreshFileList(); });
-    controls->addItem(new Aether::ControlItem(Aether::Button::PLUS, "Exit"));
+    controlBar->addControl(Aether::Button::PLUS, "Exit");
     onButtonPress(Aether::Button::PLUS, Application::exitApp);
-    addElement(controls);
+    addElement(controlBar);
 
     refreshFileList();
     setFocused(mp_pchtxtList);

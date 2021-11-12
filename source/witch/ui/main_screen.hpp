@@ -1,5 +1,4 @@
 #include "Aether/Aether.hpp"
-
 #include "consts.hpp"
 
 namespace witch {
@@ -12,7 +11,7 @@ class MainScreen : public Aether::Screen {
     ~MainScreen();
 
     // styles
-    static constexpr auto SUB_TITLE_COLOR = Aether::Colour{0xFF, 0x71, 0xE7, 0xFF};
+    static const Aether::Colour SUB_TITLE_COLOR;
 
     // dementions
     static constexpr auto TITLE_X = 50;

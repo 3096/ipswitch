@@ -12,12 +12,12 @@ class Application {
         return s_instance;
     }
 
-    Aether::Display m_Display;
+    Aether::Window m_window;
 
    public:
     static void run();
-    static inline void setScreen(Aether::Screen& screen) { getInstance().m_Display.setScreen(&screen); }
-    static inline void exitApp() { getInstance().m_Display.exit(); }
+    static inline void setScreen(Aether::Screen& screen) { getInstance().m_window.showScreen(&screen); }
+    static inline void exitApp() { getInstance().m_window.exit(); }
 };
 
 }  // namespace witch

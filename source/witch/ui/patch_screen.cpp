@@ -17,14 +17,14 @@ PatchScreen::PatchScreen()
     mp_logTextBlockWrap->setShowScrollBar(false);
     addElement(mp_logTextBlockWrap);
 
-    auto* controls = new Aether::Controls();
-    controls->addItem(new Aether::ControlItem(Aether::Button::A, "OK"));
-    controls->addItem(new Aether::ControlItem(Aether::Button::B, "Back"));
-    controls->addItem(new Aether::ControlItem(Aether::Button::Y, "Apply to IPS"));
-    // controls->addItem(new Aether::ControlItem(Aether::Button::MINUS, "Apply to AMS cheats"));
-    // controls->addItem(new Aether::ControlItem(Aether::Button::X, "More Options"));
-    controls->addItem(new Aether::ControlItem(Aether::Button::PLUS, "Exit"));
-    addElement(controls);
+    auto* controlBar = new Aether::ControlBar();
+    controlBar->addControl(Aether::Button::A, "OK");
+    controlBar->addControl(Aether::Button::B, "Back");
+    controlBar->addControl(Aether::Button::Y, "Apply to IPS");
+    // controlBar->addControl(Aether::Button::MINUS, "Apply to AMS cheats");
+    // controlBar->addControl(Aether::Button::X, "More Options");
+    controlBar->addControl(Aether::Button::PLUS, "Exit");
+    addElement(controlBar);
 
     onButtonPress(Aether::Button::B, []() { Application::setScreen(MainScreen::getInstance()); });
     onButtonPress(Aether::Button::Y, [this]() { applyIps(); });
