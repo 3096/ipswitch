@@ -11,7 +11,7 @@ namespace ui {
 
 PatchScreen::PatchScreen()
     : mp_patchList(new Aether::List(LIST_X, LIST_Y, LIST_W, LIST_H)),
-      mp_logTextBlockWrap(new Aether::Scrollable(LOG_X - 64, LOG_Y, LOG_W + 128, LOG_H)) {
+      mp_logTextBlockWrap(new Aether::Scrollable(LOG_X, LOG_Y, LOG_W, LOG_H, Aether::Padding::None)) {
     addElement(mp_patchList);
 
     mp_logTextBlockWrap->setShowScrollBar(false);
@@ -48,12 +48,12 @@ void PatchScreen::onLoad() {
 
     // set log display
     auto parseLogStr = parseLogSs.str();
-    auto parseLogTextBlock = new Aether::TextBlock(0, 0, parseLogStr, LOG_FONT_SIZE, LOG_W);
+    auto p_parseLogTextBlock = new Aether::TextBlock(0, 0, parseLogStr, LOG_FONT_SIZE, LOG_W);
     if (parseLogStr.find("ERROR") != std::string::npos) {
-        parseLogTextBlock->setColour(consts::COLOR_FAIL);
+        p_parseLogTextBlock->setColour(consts::COLOR_FAIL);
     }
     mp_logTextBlockWrap->removeAllElements();
-    mp_logTextBlockWrap->addElement(parseLogTextBlock);
+    mp_logTextBlockWrap->addElement(p_parseLogTextBlock);
 
     // set patches display
     mp_patchList->removeAllElements();
