@@ -26,9 +26,4 @@ Then simply run: `make`
 ## How to use
 See [example](example)
 
-For further assistance, please join our [Discord server](https://discord.gg/v8Rueaf)
-
----
-## TODO
-- Manage any existing `.ips` files, like a true `.ips` patch manager
-- `.ips` to patch text
+For further assistance, please join our [Discord server](https://discord.gg/BFEuuaBNR4)
